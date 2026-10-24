@@ -1,0 +1,12 @@
+{
+  "EtwelveNpaths": "2{,}000",
+  "EtwelveSlowBest": "0.75",
+  "EtwelveSlowBestGain": "53.7 \\pm 5.8",
+  "EtwelveSlowRaw": "41.3 \\pm 9.5",
+  "EtwelveMidBest": "0.50",
+  "EtwelveMidBestGain": "6.8 \\pm 1.0",
+  "EtwelveMidRaw": "-1.8 \\pm 1.8",
+  "EtwelveFastBest": "0.25",
+  "EtwelveFastBestGain": "10.2 \\pm 1.0",
+  "EtwelveFastRaw": "-54.6 \\pm 2.9"
+}

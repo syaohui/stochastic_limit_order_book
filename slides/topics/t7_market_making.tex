@@ -1,0 +1,208 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Optimal Market Making}
+\subtitle{Inventory control, exact quotes, signals, and estimating the fill curve}
+\decknumber{7}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      A market maker earns the spread on each fill and carries the inventory the fills leave behind. \hl{Where should it quote, given its inventory, its risk aversion, and how fills respond to price?}
+      \begin{itemize}
+        \item Too tight: many fills, large inventory swings.
+        \item Too wide: few fills, little revenue.
+        \item Skewed: lean against inventory to unload it.
+      \end{itemize}
+      The control problem has an exact solution when fills arrive at an exponential rate in the quote distance. Its inputs, the fill curve and the drift, must be estimated, and errors in them cost money.
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item The Avellaneda-Stoikov problem and HJB equation.
+          \item The exact GLFT solution with inventory limits.
+          \item Quoting with a short-lived signal.
+          \item Estimating the fill curve, with censoring.
+          \item What a wrong fill curve costs.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The problem}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      Mid price $\dd S_t = m\,\dd t + \sigma\,\dd W_t$, with drift $m$ (ticks s$^{-1}$) and volatility $\sigma$ (ticks s$^{-1/2}$). The maker quotes a bid at $S - d^b$ and an ask at $S + d^a$ (distances in ticks). Each quote is filled at rate
+      \[ \Lambda(d) = A\,e^{-k d}, \]
+      with $A$ (s$^{-1}$) the rate at the mid and $k$ (tick$^{-1}$) the decay. Cash $x$, inventory $y$ (shares, $|y| \le Q$), horizon $T$ (s). Maximize
+      \[ \E\big[-\exp\big(-\gamma(x_T + y_T S_T)\big)\big] \]
+      with risk aversion $\gamma$ (tick$^{-1}$ per share).
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{HJB equation} for the value $u(t, x, y, S)$:
+      \begin{align*}
+        0 = {} & \partial_t u + m\,\partial_S u + \tfrac12\sigma^2\partial_{SS}u \\
+        & + \sup_{d^b} A e^{-kd^b}\big[u(x - S + d^b, y + 1) - u\big] \\
+        & + \sup_{d^a} A e^{-kd^a}\big[u(x + S + d^a, y - 1) - u\big],
+      \end{align*}
+      with $u(T) = -e^{-\gamma(x + yS)}$. \citet{avellaneda2008high} expand in $y$; \citet{gueant2013dealing} solve it exactly.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Avellaneda-Stoikov: reservation price and spread}
+  \centering
+  \includegraphics[width=0.74\textwidth]{fig8_market_making.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      To first order in inventory, quotes are symmetric around the reservation price $r_t$:
+      \[ r_t = S_t - y\,\gamma\sigma^2(T - t), \qquad d^a + d^b = \gamma\sigma^2(T - t) + \tfrac{2}{\gamma}\ln\big(1 + \tfrac{\gamma}{k}\big). \]
+      Long inventory lowers both quotes: sell more, buy less.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      AS example parameters ($S_0 = 100$, $\sigma = 2$, $\gamma = 0.1$, $k = 1.5$, $A = 140$, $T = 1$, price units), $\EsevenNpaths$ paths: mean profit $\EsevenInvMean$ with standard deviation $\EsevenInvStd$, against $\EsevenSymMean$ and $\EsevenSymStd$ for the same spread centred on the mid. A little less mean, half the risk.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The exact solution with inventory limits}
+  \small
+  \citet{gueant2013dealing}: the ansatz $u = -\exp(-\gamma(x + yS))\,v_y(t)^{-\gamma/k}$ turns the HJB equation into the \hl{linear} system $\dot v = M v$, $v(T) = \mathbf{1}$, for the vector $v = (v_{-Q}, \ldots, v_Q)$:
+  \[ M_{yy} = \tfrac{k}{2}\gamma\sigma^2 y^2 - k\,m\,y, \qquad M_{y,y\pm1} = -A\big(1 + \tfrac{\gamma}{k}\big)^{-(1 + k/\gamma)}, \]
+  \[ v(t) = e^{-M(T - t)}\mathbf{1}, \qquad d^b(t, y) = \frac1k\ln\frac{v_y}{v_{y+1}} + \frac1\gamma\ln\Big(1 + \frac\gamma k\Big), \qquad d^a(t, y) = \frac1k\ln\frac{v_y}{v_{y-1}} + \frac1\gamma\ln\Big(1 + \frac\gamma k\Big). \]
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item $M$ is symmetric and tridiagonal: diagonalize once, and quotes at any time cost a few vector operations.
+        \item Long horizons: $v$ aligns with the ground state of $M$, giving stationary quotes.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}
+        \item Units: $k\gamma\sigma^2 y^2$ and $k m y$ are in s$^{-1}$, like $A$. Every entry of $M$ is a rate.
+        \item Checks: ODE residual below $10^{-6}$; terminal quotes; closed form near $y = 0$.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exact quotes against approximations}
+  \centering
+  \includegraphics[width=0.84\textwidth]{fig11_glft_exact.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      GLFT example: $\sigma = 0.3$ tick s$^{-1/2}$, $A = 0.9$ s$^{-1}$, $k = 0.3$ tick$^{-1}$, $\gamma = 0.01$ tick$^{-1}$, $T = 600$ s, $Q = 30$. (a) Stationary exact quotes match the closed form within $\EelevenMaxApproxErr$ ticks near $y = 0$; the AS expansion at $t = 0$ overreacts to inventory. (b) Quotes settle after about 200 s. (c) A drift tightens one side.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \scriptsize
+      \input{\reporoot/results/e11_table.tex}
+
+      \vspace{0.2em}
+      $\EelevenNpaths$ paths; CE: certainty equivalent, $-\frac1\gamma\ln\E[e^{-\gamma\Pi}]$ for profit $\Pi$ (ticks).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Quoting with a short-lived signal}
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{fig12_signal.png}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \small
+      The drift is $\pm m_0$ (ticks s$^{-1}$) and flips sign at rate $\kappa_s$ (s$^{-1}$), so the signal's mean life is $1/\kappa_s$. The exact solution treats a drift as permanent. A practitioner plugs in $s\,m(t)$ with shrinkage $s \in [0, 1]$.
+      \begin{itemize}
+        \item Life 300 s: best $s = \EtwelveSlowBest$, gain $\EtwelveSlowBestGain$ ticks of CE.
+        \item Life 60 s: raw use \hl{loses} $\EtwelveFastRaw$; $s = \EtwelveFastBest$ gains $\EtwelveFastBestGain$.
+      \end{itemize}
+      The proper fix is a larger state (signal and inventory) in the HJB equation; shrinkage is a cheap approximation to it. Paired paths, bootstrap errors.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Estimating the fill curve}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      Data: quote spells $i$ at distance $d_i$ (ticks), each resting for $\tau_i$ seconds and ending in a fill ($n_i = 1$) or a cancellation ($n_i = 0$, right-censored). With intensity $A e^{-k d}$ the log-likelihood is
+      \[ \ell(A, k) = \sum_i \big[n_i(\ln A - k d_i) - A e^{-k d_i}\tau_i\big], \]
+      a Poisson regression with exposure $\tau_i$. Newton's method on $(\ln A, k)$; standard errors from the Fisher information.
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{The naive estimate.} Divide the fill fraction within a fixed time $t_{\max}$ by $t_{\max}$ and fit an exponential. But a quote fills at most once, so
+      \[ P(\text{fill}) = 1 - e^{-A e^{-kd} t_{\max}} \]
+      saturates near the touch. The curve flattens and $k$ is biased down. The censoring that the likelihood handles exactly is ignored.
+
+      \vspace{0.3em}
+      \textbf{In practice} fills also depend on queue position, which the model leaves out (deck 8).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What a wrong fill curve costs}
+  \centering
+  \includegraphics[width=0.84\textwidth]{fig21_fill_estimation.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      (a) $\EtwentyoneSpells$ spells, 30 s maximum. MLE: $\hat A = \EtwentyoneAhat$ s$^{-1}$, $\hat k = \EtwentyoneKhat$ tick$^{-1}$ (true 0.9 and 0.3). Naive fit: $\hat A = \EtwentyoneAnaive$, $\hat k = \EtwentyoneKnaive$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      (b) Exact GLFT quotes computed with a wrong $k$, run against the true fills ($\EtwentyonePaths$ paired paths). Halving $k$ costs $\EtwentyoneLossHalf$ ticks of CE out of $\EtwentyoneCEtrue$; doubling it costs $\EtwentyoneLossDouble$; the naive $(\hat A, \hat k)$ costs $\EtwentyoneLossNaive$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Evidence, discussion and takeaways}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{The literature}
+      \begin{itemize}
+        \item AS: inventory-skewed quotes lower profit variance at little cost in mean \citep{avellaneda2008high}.
+        \item GLFT: exact solution, closed-form asymptotic quotes, drift and inventory limits \citep{gueant2013dealing}; multi-asset quotes beat independent ones \citep{gueant2017optimal}.
+        \item Book-length treatment: \citet{cartea2015algorithmic}. RL agents tend to beat analytical benchmarks in simulation \citep{gasperov2021reinforcement}.
+      \end{itemize}
+      \textbf{Assumptions to keep in view.} Exponential fill curve; fills independent of the next price move (no adverse selection); constant $\sigma$, $A$, $k$; unit size.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{enumerate}
+        \item Use the exact solution: it is cheap and beats the expansion.
+        \item Estimate the fill curve by exposure likelihood; naive fill ratios can cost a large share of CE.
+        \item Shrink signals by their life relative to inventory turnover.
+        \item The missing piece is adverse selection: fills are not independent of what the price does next (deck 8).
+      \end{enumerate}
+      \textbf{Open question.} The optimal map from signal half-life to quotes, in closed form.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{market\_making.py}. Experiments: \texttt{e7}, \texttt{e11}, \texttt{e12}, \texttt{e21}.
+\begin{verbatim}
+from stochastic_lob import market_making as mm
+p = mm.MMParams(S0=0, T=600, sigma=0.3, dt=0.2, gamma=0.01, k=0.3, A=0.9)
+bid, ask = mm.glft_exact_quotes(Q=30, p=p, taus=[600.0])
+tau, filled = mm.simulate_quote_spells(0.9, 0.3, distances, t_max=30.0)
+A_hat, k_hat, cov = mm.fit_fill_intensity(distances, tau, filled)
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

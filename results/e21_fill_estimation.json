@@ -1,0 +1,12 @@
+{
+  "EtwentyoneSpells": "6{,}400",
+  "EtwentyoneAhat": "0.886 \\pm 0.022",
+  "EtwentyoneKhat": "0.299 \\pm 0.003",
+  "EtwentyoneAnaive": "0.111",
+  "EtwentyoneKnaive": "0.165",
+  "EtwentyoneCEtrue": "1292.5",
+  "EtwentyoneLossHalf": "-328.0 \\pm 1.9",
+  "EtwentyoneLossDouble": "-225.1 \\pm 1.3",
+  "EtwentyoneLossNaive": "-249.5 \\pm 1.8",
+  "EtwentyonePaths": "2{,}000"
+}

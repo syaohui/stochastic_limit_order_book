@@ -1,0 +1,15 @@
+{
+  "EoneNevents": "300{,}000",
+  "EoneBurnin": "20{,}000",
+  "EoneCSTspread": "1.226 \\pm 0.006",
+  "EoneZIspread": "2.610 \\pm 0.028",
+  "EoneCSTponetick": "0.82",
+  "EoneZIponetick": "0.29",
+  "EoneCSTduration": "1.1",
+  "EoneZIduration": "1.2",
+  "EoneCSTdepthone": "2.15",
+  "EoneCSTdepthfar": "0.56",
+  "EoneCSTfarref": "0.69",
+  "EoneCSTmidrange": "84.0",
+  "EoneDropped": "0"
+}

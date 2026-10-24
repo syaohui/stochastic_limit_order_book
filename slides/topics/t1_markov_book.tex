@@ -1,0 +1,195 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{The Markovian Order Book}
+\subtitle{From zero intelligence to Cont-Stoikov-Talreja: model, estimation, evidence}
+
+\decknumber{1}
+
+\begin{document}
+
+\maketitle
+
+% ------------------------------------------------------------------ big picture
+\begin{frame}{The question}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \small
+      Can order flow with \hl{no strategy at all} explain the shape of the book, the spread, and how fast prices move?
+      \begin{itemize}
+        \item If yes, the book's statics are set by a few rates, and much of what looks like behaviour is mechanics.
+        \item If no, the gap tells us where strategy and information matter.
+      \end{itemize}
+      \vspace{0.3em}
+      For a liquidity provider (LP) this model is the \hl{null hypothesis}: fill probabilities, queue depletion and spread you should expect before any alpha or toxicity.
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item The model and what it predicts exactly.
+          \item Estimating its rates from a message stream, with standard errors.
+          \item What real books show.
+          \item Where the model fails.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ model
+\begin{frame}{The model}
+  \small
+  Prices on a grid with tick $\delta$ (currency). State: $X_p(t)$, the signed number of resting unit orders at price $p$ (ticks), positive for asks. Best bid $p_B$, best ask $p_A$, spread $s = p_A - p_B$ (ticks). For an order at distance $i \geq 1$ ticks from the \emph{opposite} best quote:
+  \vspace{0.3em}
+
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    Event & Rate & Unit \\
+    \midrule
+    limit buy at $p_A - i$ (sell at $p_B + i$) & $\lambda(i)$ & orders s$^{-1}$ \\
+    market buy (sell), takes one order at $p_A$ ($p_B$) & $\mu$ & orders s$^{-1}$ \\
+    cancellation of one resting order at distance $i$ & $\theta(i)$ per order & s$^{-1}$ \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.4em}
+
+  \raggedright
+  \begin{itemize}
+    \item \textbf{Zero intelligence} \citep{smith2003statistical}: $\lambda$ and $\theta$ constant over a window of $L$ ticks.
+    \item \textbf{CST} \citep{cont2010stochastic}: $\lambda(i) = \lambda_1 i^{-a}$, with $\lambda_1$ (s$^{-1}$) the rate at $i = 1$ and $a$ a dimensionless exponent, fitted to Tokyo Stock Exchange data.
+    \item All events are independent Poisson streams given the state, so $X$ is a continuous-time Markov chain. It is simulated exactly by the Gillespie algorithm.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{What the model predicts}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Depth far from the quotes.} A level that market orders rarely reach is an M/M/$\infty$ queue: arrivals at rate $\lambda(i)$, each order leaves at rate $\theta(i)$. Its mean depth is
+      \[ \bar Q(i) \to \lambda(i)/\theta(i) \quad \text{(orders)}. \]
+      Near the quotes, market orders thin the book, so $\bar Q(i) < \lambda(i)/\theta(i)$.
+
+      \vspace{0.4em}
+      \textbf{Dimensional analysis} \citep{smith2003statistical}. With prices in ticks and sizes in orders, every stationary statistic depends only on
+      \[ \lambda/\theta \ \text{(depth scale)}, \quad \mu/\lambda \ \text{(price scale, ticks)}, \quad L. \]
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Conditional probabilities.} CST compute, by Laplace transforms of first-passage times of birth-death queues, the probability that the mid moves up, that an order at the bid executes before the ask moves, and that a limit order fills before the price moves.
+
+      \vspace{0.4em}
+      These are the same first-passage problems as in the best-queue model (deck 2), with state-dependent depletion $\mu + \theta q$.
+
+      \vspace{0.4em}
+      \textbf{Assumptions.} Unit order size; rates depend on distance only, not on queue sizes or history; no information.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Simulated depth profile and spread}
+  \centering
+  \includegraphics[width=0.9\textwidth]{fig1_markov_book.png}
+  \small
+  \begin{itemize}
+    \item Rates: power law $\lambda_1 = 1.9$ s$^{-1}$, $a = 0.5$, $\theta = 0.5$ s$^{-1}$, $\mu = 1$ s$^{-1}$; zero intelligence $\lambda = 0.6$, $\theta = 0.2$, $\mu = 2$ s$^{-1}$. $\EoneNevents$ events each.
+    \item Mean spread: $\EoneCSTspread$ ticks (power law), $\EoneZIspread$ ticks (zero intelligence). Far depth $\EoneCSTdepthfar$ against the M/M/$\infty$ value $\EoneCSTfarref$ orders.
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------ statistics
+\begin{frame}{Estimation: the likelihood of a Markov jump process}
+  \small
+  Observe the book on $[0, T]$ (s). For a Markov jump process the log-likelihood is
+  \[ \ell = \sum_{\text{events } k} \ln r_{e_k}(X_{t_k^-}) \;-\; \int_0^T \sum_e r_e(X_t)\,\dd t , \]
+  with $r_e(x)$ the rate of event type $e$ in state $x$. Because each rate depends on one parameter, $\ell$ splits into independent Poisson problems:
+  \[
+    \hat\lambda(i) = \frac{N_L(i)}{2T}, \qquad
+    \hat\theta(i) = \frac{N_C(i)}{E(i)}, \qquad
+    \hat\mu = \frac{N_M}{2T},
+  \]
+  where $N_L(i)$, $N_C(i)$, $N_M$ count limit orders and cancellations at distance $i$ and market orders (both sides), and $E(i) = \int_0^T [\text{orders at distance } i]\,\dd t$ (order-seconds) is the \hl{exposure}. Standard errors: $\sqrt{N}/\text{denominator}$.
+  \vspace{0.3em}
+  \begin{itemize}
+    \item Distances are measured against the quotes \emph{just before} each event.
+    \item Cancellation rates need the exposure, so they need the full depth over time, not just the messages.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Estimation in practice: recovery, and the depth-truncation trap}
+  \centering
+  \includegraphics[width=0.84\textwidth]{fig15_rate_estimation.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      $\EfifteenNevents$ events ($\EfifteenHours$ h) of the power-law book, written to and read back from LOBSTER files. (a) $\hat\lambda(i)$ within $\EfifteenMaxZlam$ s.e.\ of the truth; weighted least squares on $\ln\hat\lambda$ gives $\hat a = \EfifteenAhat$ (true $0.5$). $\hat\mu = \EfifteenMuhat$ s$^{-1}$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      (b) With the full book, $\hat\theta(i)$ is within $\EfifteenMaxZtheta$ s.e. A 10-level file sees about $\EfifteenLevelTen$ ticks of book, so the exposure is cut off while cancellation messages still arrive: $\hat\theta(i)$ is biased from $i = \EfifteenIbad$ on.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ------------------------------------------------------------------ evidence
+\begin{frame}{What real books show}
+  \small
+  \begin{itemize}
+    \item \textbf{Placement is broad.} On the Paris Bourse (France Telecom, Vivendi, Total; February 2001), the distance of new limit orders from the current price follows a power law with exponent about $0.6$, from 1 to over 100 ticks. The mean book is \hl{hump-shaped}: depth peaks away from the best quotes \citep{bouchaud2002statistical}.
+    \item \textbf{Zero intelligence explains cross-sectional statics.} For 11 London Stock Exchange stocks, the model with measured rates explains 96\% of the variance of the mean spread and 76\% of the variance of the price diffusion rate across stocks \citep{farmer2005predictive}.
+    \item \textbf{Power-law placement fits.} CST estimate a power-law $\lambda(i)$ from Tokyo Stock Exchange order books and use the fitted model to compute conditional probabilities of price moves \citep{cont2010stochastic}.
+    \item \textbf{Survey.} \citet{gould2013limit} collect the stylized facts and compare models against them.
+  \end{itemize}
+  \vspace{0.3em}
+  \small Numbers above are as reported in the cited papers; this repository uses no market data.
+\end{frame}
+
+% ------------------------------------------------------------------ discussion
+\begin{frame}{Where the model fails}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{State dependence.} Real intensities depend on queue size: market orders arrive faster when the best queue is short, and cancellations per order fall as queues grow \citep{huang2015simulating}. Deck 3.
+
+      \vspace{0.4em}
+      \textbf{Memory.} Order signs are long-range correlated, with autocorrelation decaying as $\ell^{-0.6}$ on the LSE \citep{lillo2004long}; here they are independent. Deck 5.
+
+      \vspace{0.4em}
+      \textbf{Self-excitation.} Events cluster in time beyond what the state explains. Deck 4.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Information.} Nobody knows anything, so there is no adverse selection from information. Yet even here, the fills that empty a queue are followed by an adverse move: they keep $\EtenDepZero$ ticks against $\EtenNondepZero$ for other fills (deck 8). Queue mechanics alone create toxicity.
+
+      \vspace{0.4em}
+      \textbf{Order size.} Unit orders; real orders vary over orders of magnitude.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Takeaways for a liquidity provider}
+  \small
+  \begin{enumerate}
+    \item \textbf{Use it as a baseline.} Fill probabilities, depletion times and spread from a model fitted to today's rates are the benchmark that a strategy's edge is measured against.
+    \item \textbf{Estimate with exposure, not counts.} Cancellation rates per order need time-integrated depth. A rate computed as ``cancels per second'' confuses a busy level with a deep one.
+    \item \textbf{Mind the data depth.} Ten visible levels cover about $\EfifteenLevelTen$ ticks here; beyond that, cancellation estimates are wrong, and so is anything built on them.
+    \item \textbf{Standard errors are cheap.} The Poisson likelihood gives them for free; report them.
+  \end{enumerate}
+  \vspace{0.3em}
+  \textbf{Open questions.} How much of the cross-section of spreads and volatility in today's fragmented, high-frequency markets do rate-only models still explain? Which state variables (queue sizes, recent flow, time of day) should enter the rates first?
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{src/stochastic\_lob/markov\_lob.py} (simulation, \texttt{estimate\_rates}), \texttt{lobster.py} (data format). Experiments: \texttt{e1\_markov\_book.py}, \texttt{e15\_rate\_estimation.py}.
+\begin{verbatim}
+from stochastic_lob import markov_lob as ml
+p = ml.power_law_params(L=30, lam1=1.9, a=0.5, theta0=0.5, mu=1.0)
+rec = ml.simulate_markov_lob(p, 200_000, rng=1, record_levels=40)
+est = ml.estimate_rates(rec, L=30)     # lam, theta, mu with standard errors
+\end{verbatim}
+  With LOBSTER files: \texttt{lobster.to\_record(lobster.read(msg, book))} gives the same record.
+\end{frame}
+
+\deckreferences
+\end{document}

@@ -1,0 +1,14 @@
+{
+  "EfourteenK": "5",
+  "EfourteenShortOne": "0.42",
+  "EfourteenShortAll": "0.67",
+  "EfourteenShortInt": "0.65",
+  "EfourteenShortN": "4{,}115",
+  "EfourteenCoefZero": "0.098",
+  "EfourteenCoefOne": "0.009",
+  "EfourteenWeights": "0.22, 0.23, 0.20, 0.19, 0.16",
+  "EfourteenLongOne": "0.62",
+  "EfourteenLongAll": "0.74",
+  "EfourteenLongInt": "0.73",
+  "EfourteenLongN": "823"
+}

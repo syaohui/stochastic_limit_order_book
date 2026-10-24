@@ -1,0 +1,70 @@
+% Shared preamble of the main deck and the topic decks.
+% Define \reporoot (the path from the .tex file to the repository root)
+% before \input-ing this file.
+\usetheme[progressbar=frametitle,numbering=fraction,sectionpage=progressbar]{metropolis}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,decorations.pathreplacing}
+\usepackage[authoryear,round]{natbib}
+\usepackage{xcolor}
+
+\graphicspath{{\reporoot/figures/}}
+
+% Every number on the slides is produced by experiments/*.py and read from here.
+\input{\reporoot/results/e1_markov_book.tex}
+\input{\reporoot/results/e2_best_queues.tex}
+\input{\reporoot/results/e3_queue_reactive.tex}
+\input{\reporoot/results/e4_hawkes.tex}
+\input{\reporoot/results/e5_signature.tex}
+\input{\reporoot/results/e6_propagator.tex}
+\input{\reporoot/results/e7_market_making.tex}
+\input{\reporoot/results/e8_ofi.tex}
+\input{\reporoot/results/e9_queue_value.tex}
+\input{\reporoot/results/e10_markouts.tex}
+\input{\reporoot/results/e11_glft_exact.tex}
+\input{\reporoot/results/e12_signal.tex}
+\input{\reporoot/results/e13_lvr.tex}
+\input{\reporoot/results/e14_mlofi.tex}
+\input{\reporoot/results/e15_rate_estimation.tex}
+\input{\reporoot/results/e16_queue_reactive_price.tex}
+\input{\reporoot/results/e17_hawkes_pitfalls.tex}
+\input{\reporoot/results/e18_propagator_estimation.tex}
+\input{\reporoot/results/e19_latent_book.tex}
+\input{\reporoot/results/e20_microprice.tex}
+\input{\reporoot/results/e21_fill_estimation.tex}
+\input{\reporoot/results/e22_glosten_milgrom.tex}
+\input{\reporoot/results/e23_cdl_on_book.tex}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\OFI}{\mathrm{OFI}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\src}[1]{\par\vfill{\scriptsize\color{gray}#1}}
+\definecolor{accent}{HTML}{0C5DA5}
+\definecolor{warn}{HTML}{C0392B}
+\newcommand{\hl}[1]{\textcolor{accent}{\textbf{#1}}}
+
+\setbeamerfont{footnote}{size=\tiny}
+\setbeamerfont{caption}{size=\scriptsize}
+
+\author{Yaohui Shu}
+\institute{Stony Brook University}
+\date{October 2026}
+
+% Topic decks: a references frame that lists only the works cited in the deck.
+\newcommand{\deckreferences}{%
+  \begin{frame}[allowframebreaks]{References}
+    \tiny
+    \renewcommand{\bibsection}{}
+    \bibliographystyle{plainnat}
+    \bibliography{\reporoot/slides/refs}
+  \end{frame}}
+
+% Topic decks: the standard "where this fits" footer on the title frame.
+\newcommand{\deckseries}{Deep dive in the series \emph{Stochastic Models of the Limit Order Book}}
+
+% Topic decks: \decknumber{n} puts the series line under the date on the title page.
+\newcommand{\decknumber}[1]{\institute{Stony Brook University\hfill{\scriptsize\color{gray}Deep dive #1 of 9}}}

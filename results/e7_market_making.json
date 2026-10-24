@@ -1,0 +1,10 @@
+{
+  "EsevenNpaths": "1{,}000",
+  "EsevenInvMean": "65.1",
+  "EsevenSymMean": "67.4",
+  "EsevenInvStd": "6.5",
+  "EsevenSymStd": "12.7",
+  "EsevenOmega": "0.052",
+  "EsevenHalfSpreadT": "0.645",
+  "EsevenSpreadZero": "1.691"
+}

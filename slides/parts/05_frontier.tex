@@ -1,0 +1,57 @@
+\section{The frontier, 2023 to 2026}
+
+\begin{frame}{Generative models of the order book}
+  \footnotesize
+  The shift: from models of a few summary statistics to models of the \hl{full message stream}.
+  \vspace{0.3em}
+
+  \begin{tabular}{p{0.3\textwidth}p{0.62\textwidth}}
+    \toprule
+    Work & What it does \\
+    \midrule
+    \citet{nagy2023generative} & Token-level autoregressive model of LOBSTER messages with a deep state-space network; generated order flow drives a book simulator. \\
+    LOB-Bench \citep{nagy2025lobbench} & Benchmark for generated LOB data: spreads, volumes, imbalance, inter-arrival times, a discriminator score, and \hl{market impact} metrics. Autoregressive models beat a (C)GAN and a parametric model. \\
+    LOBERT \citep{linna2025lobert} & Encoder-only foundation model; one token per full message, with continuous price, volume and time. \\
+    TradeFM \citep{kawawa2026tradefm} & 524M-parameter transformer on trade events from over 9,000 stocks; one model across assets. \\
+    \citet{mohl2026understanding} & Probes a Mamba state-space model: OFI is linearly decodable from its states ($R^2\approx 0.59$), transfers to unseen stocks, and steering it changes predictions. \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+
+  Open question for LPs: do these simulators respond \emph{causally} to a new order the way a real book does? Matching marginal statistics is not enough to backtest a quoting strategy.
+\end{frame}
+
+\begin{frame}{Learning to make markets}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Reinforcement learning.} Market making framed as a Markov decision process; RL agents tend to beat analytical benchmarks on risk-adjusted return in simulation \citep{gasperov2021reinforcement}. The simulator is the weak link: an agent learns the flaws of its environment.
+
+      \vspace{0.5em}
+      \textbf{Online learning with order book feedback.} Trader valuations are seen only when no trade occurs.
+      \begin{itemize}
+        \item Regret improves from $\tilde O(T^{2/3})$ to $\tilde O(\sqrt T)$ with high probability; sublinear regret is impossible if prices and valuations are both adversarial \citep{vischi2026optimal}.
+        \item The value of observing the book is made precise by an action-dependent feedback model \citep{maran2026online}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Signals inside the control problem.} Optimal trading with a Markov signal and transient impact has explicit solutions \citep{lehalle2019incorporating}. Exact market making with a drift is a linear ODE system \citep{gueant2013dealing}; next slides use it.
+
+      \vspace{0.5em}
+      \textbf{Brokers and toxic flow.} A broker can learn a trend signal from informed clients' flow and decide what to internalize \citep{cartea2025brokers}; online Bayesian neural networks predict which client trades are toxic \citep{cartea2023detecting}.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Microstructure as the source of volatility}
+  \small
+  \begin{itemize}
+    \item Hawkes order flow near criticality ($\rho(G)\to 1$) has volatility-like scaling limits \citep{jaisson2015limit}; with heavy-tailed kernels these limits are \hl{rough} (Hurst exponent below one half).
+    \item No-arbitrage, buy-sell asymmetry and metaorder splitting give a rough Heston model with leverage \citep{eleuch2018microstructural}; recent work adds common price and volatility jumps \citep{wang2026rough}.
+    \item For an LP this links two time scales: the branching ratio estimated from milliseconds of order flow controls the volatility it must hedge over minutes and hours.
+  \end{itemize}
+  \vspace{0.5em}
+  \begin{alertblock}{Market design}
+    Continuous books create speed races; frequent batch auctions turn competition on speed into competition on price \citep{budish2015high}. AMMs remove the queue entirely but leave LPs exposed to arbitrage (loss-versus-rebalancing).
+  \end{alertblock}
+\end{frame}

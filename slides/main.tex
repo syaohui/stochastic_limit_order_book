@@ -1,0 +1,32 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{..}
+\input{preamble}
+
+\title{Stochastic Models of the Limit Order Book}
+\subtitle{Order flow, queues, and the liquidity provider's problem}
+
+\begin{document}
+
+\maketitle
+
+\input{parts/00_overview}
+\input{parts/01_problem}
+\input{parts/02_models}
+\input{parts/03_order_flow}
+\input{parts/04_liquidity_provider}
+\input{parts/05_frontier}
+\input{parts/06_open_problems}
+\input{parts/07_repo}
+
+\appendix
+\input{parts/08_backup}
+
+\begin{frame}[allowframebreaks]{References}
+  \tiny
+  \renewcommand{\bibsection}{}
+  \nocite{gould2013limit,abergel2016limit,bouchaud2018trades,cartea2015algorithmic,glosten1985bid,kyle1985continuous}
+  \bibliographystyle{plainnat}
+  \bibliography{refs}
+\end{frame}
+
+\end{document}

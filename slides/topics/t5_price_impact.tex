@@ -1,0 +1,205 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Price Impact}
+\subtitle{Propagators, the square-root law, and the latent order book}
+\decknumber{5}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      Trades move prices. \hl{How much, for how long, and why is it concave in size?}
+      \begin{itemize}
+        \item Order signs have long memory, yet prices are close to unpredictable. Impact must decay just fast enough to offset the memory.
+        \item A metaorder's impact grows like the square root of its size, across markets and decades.
+        \item For an LP, impact is adverse selection seen from the other side: the price move that follows a fill.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item The propagator model and its critical decay.
+          \item Estimating the propagator from trades.
+          \item The latent order book: an exact crossover from linear to square-root impact (derived here).
+          \item Evidence and open questions.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Two facts that must coexist}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Long memory of order signs.} With trade signs $\varepsilon_n = \pm1$ in trade time $n$, the autocorrelation decays as a power law,
+      \[ C_\varepsilon(\ell) = \E[\varepsilon_n\varepsilon_{n+\ell}] \sim \ell^{-\gamma_\varepsilon},\qquad 0 < \gamma_\varepsilon < 1. \]
+      On the London Stock Exchange $\gamma_\varepsilon \approx 0.6$ \citep{lillo2004long}. Large orders are split, so signs persist for thousands of trades.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Square-root impact.} A metaorder of $Q$ shares, executed over hours, moves the price on average by
+      \[ I(Q) \approx Y\sigma_D\sqrt{Q/V_D}, \]
+      with daily volatility $\sigma_D$ (fraction of price), daily volume $V_D$ (shares) and $Y$ of order one \citep{toth2011anomalous}. More generally $I \propto Q^{\delta_Q}$ with $\delta_Q$ between 0.4 and 0.7.
+    \end{column}
+  \end{columns}
+  \vspace{0.4em}
+  If each trade had a permanent impact, memory would make prices trend. If impact were linear in size, splitting would not matter. Both are false in data.
+\end{frame}
+
+\begin{frame}{The propagator model}
+  \small
+  The price just before trade $n$, in ticks \citep{bouchaud2004fluctuations}:
+  \[ P_n = \sum_{m<n} G(n - m)\,\varepsilon_m + \text{noise}, \qquad G(\ell) = \Gamma_0\,\ell^{-\zeta}, \]
+  with $\Gamma_0$ the impact one trade later (ticks) and $\zeta$ the decay exponent. For $C_\varepsilon \sim \ell^{-\gamma_\varepsilon}$, the variance per trade of price changes over $\ell$ trades scales as $\mathcal{D}(\ell) = \Var(P_{n+\ell} - P_n)/\ell \sim \ell^{\,1 - \gamma_\varepsilon - 2\zeta}$, so prices diffuse only at $\zeta_c = (1 - \gamma_\varepsilon)/2$. Faster decay gives mean reversion, slower decay gives trends.
+  \vspace{0.2em}
+  \centering
+  \includegraphics[width=0.56\textwidth]{fig6_propagator.png}
+
+  \raggedright\footnotesize Signs from fractional Gaussian noise, $\gamma_\varepsilon = \EsixGamma$, $2^{20}$ trades. Fitted slopes $\EsixSlopeLow$, $\EsixSlopeCrit$, $\EsixSlopeHigh$; theory $\EsixTheoryLow$, $\EsixTheoryCrit$, $\EsixTheoryHigh$.
+\end{frame}
+
+\begin{frame}{Estimating the propagator}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      Differencing the model, the price change at trade $n$ is
+      \[ \Delta P_n = \sum_{k\geq 0} g_k\,\varepsilon_{n-k} + \xi_n, \]
+      with $g_0 = G(1)$, $g_k = G(k+1) - G(k)$, and noise $\xi_n$ (ticks) uncorrelated with past signs. Multiply by $\varepsilon_{n-j}$ and average:
+      \[ \sum_{k=0}^{K-1} C_\varepsilon(|j - k|)\,g_k = S(j) = \E[\Delta P_n\,\varepsilon_{n-j}], \]
+      a Toeplitz system for $g_0, \ldots, g_{K-1}$; then $G(\ell) = \sum_{k<\ell} g_k$ \citep{bouchaud2004fluctuations,eisler2012price}.
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{Two warnings.}
+      \begin{itemize}
+        \item \hl{Truncation bias.} Lags beyond $K$ are left out, and long-memory signs make them correlated with the lags kept. $\hat G$ is biased near $\ell = K$. Choose $K$ much larger than the lags you care about.
+        \item \hl{Response is not impact.} The observable $\mathcal{R}(\ell) = \E[\varepsilon_n(P_{n+\ell} - P_n)]$ mixes the propagator with the memory of future signs. It can rise while $G$ falls.
+      \end{itemize}
+      \textbf{Uncertainty.} Block bootstrap over contiguous blocks, longer than the sign memory.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Estimation in practice}
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig18_propagator_estimation.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      $\EeighteenN$ trades, $\gamma_\varepsilon = 0.5$, $G(\ell) = \ell^{-1/4}$ (critical), plus price noise of 1 tick per trade. (a) With $K = 100$, $\hat G(100) = \EeighteenGhundredShort$ against the true $\EeighteenGtrue$, and $\hat\zeta = \EeighteenZetaShort$ (fit on lags 2 to 100). With $K = 2000$: $\hat G(100) = \EeighteenGhundredLong$, $\hat\zeta = \EeighteenZetaLong$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      (b) The response function stays near one tick ($\mathcal{R}(1) = \EeighteenRone$, maximum $\EeighteenRmax$) while the propagator falls to $0.15$: reading $\mathcal{R}$ as impact decay would conclude that impact is permanent. Errors: block bootstrap, 32 blocks.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The latent order book}
+  \small
+  The visible book holds a small fraction of daily volume, so it cannot explain impact over hours. \citet{donier2015fully} model the \hl{latent} book: intentions to trade that are revealed as the price approaches.
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      Latent bid and ask densities $b(x,t)$, $a(x,t)$ (shares per tick) at price $x$ (ticks) diffuse with coefficient $D$ (ticks$^2$ s$^{-1}$) and annihilate on contact. With $\phi = b - a$ and a buy metaorder at rate $m(t)$ (shares s$^{-1}$):
+      \[ \partial_t\phi = D\,\partial_x^2\phi + m(t)\,\delta_D(x - y_t), \qquad \phi(y_t, t) = 0, \]
+      where $y_t$ is the price and $\delta_D$ the Dirac delta. Far from the price $\phi(x, 0) = -Lx$, with slope $L$ (shares tick$^{-2}$).
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{Units first.} The only dimensionless group made of $m$, $L$, $D$ is
+      \[ u = \frac{m}{LD}, \]
+      execution rate over the rate at which diffusion brings liquidity to the price. For constant $m$ there is no time scale, so the price path is self-similar:
+      \[ y_t = \sqrt{Dt}\;F(u). \]
+      Simplest version: no deposition, no cancellation (infinite memory).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{An exact crossover from linear to square-root impact}
+  \small
+  The equation is linear in $\phi$, so $\phi = -Lx + m\int_0^t K_D(x - y_s, t - s)\,\dd s$ with the heat kernel $K_D(x,\tau) = e^{-x^2/4D\tau}/\sqrt{4\pi D\tau}$. Set $\phi(y_t, t) = 0$ with $y_s = A\sqrt{s}$, substitute $s = tw$, $w = 1 - v^2$, and write $a = A/\sqrt{D}$:
+  \[ \boxed{\;a = \frac{u}{\sqrt\pi}\int_0^1 \exp\!\Big(-\frac{a^2}{4}\,\frac{1 - \sqrt{1 - v^2}}{1 + \sqrt{1 - v^2}}\Big)\dd v\;} \qquad (F(u) = a). \]
+  The left side increases in $a$ and the right side decreases, so the root is unique.
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Slow execution} ($u \ll 1$): $a \to u/\sqrt\pi$, so for $Q = mT$ shares over $T$ s
+      \[ I = \frac{Q}{L\sqrt{\pi D T}} \quad \text{(linear in } Q). \]
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Fast execution} ($u \gg 1$): the integrand is concentrated near $v = 0$, $a \to \sqrt{2u}$, and
+      \[ I = \sqrt{2Q/L} \quad \text{(square root, independent of } D, T). \]
+    \end{column}
+  \end{columns}
+  \vspace{0.2em}
+  Checks: units ($I$ in ticks in both limits); the fast limit equals the price at which a linear book $Lx$ holds $Q$ shares. Derived for this repository; \citet{donier2015fully} give the two regimes.
+\end{frame}
+
+\begin{frame}{Closed form against the PDE}
+  \centering
+  \includegraphics[width=0.88\textwidth]{fig19_latent_book.png}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      (a) Crank-Nicolson solution of the PDE on 16,001 nodes: within $\EnineteenMaxErr\%$ of the closed form up to $u = \EnineteenUmax$; halving the resolution doubles the error ($\EnineteenErrCoarse\%$), first-order convergence. (b) The local exponent falls from $\EnineteenExpoLow$ to $\EnineteenExpoHigh$; the asymptotes cross at $u = 2\pi$.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      (c) After the metaorder, impact decays. In the linear regime the exact path is
+      \[ y_t = \tfrac{m}{L\sqrt{\pi D}}\big(\sqrt{t} - \sqrt{t - T}\big), \]
+      a propagator with exponent $1/2$ in calendar time. At $t = 5T$ the slow metaorder keeps $\EnineteenRemainSlow$ of its peak (theory $\EnineteenRemainLin$); the fast one keeps $\EnineteenRemainFast$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What the data show}
+  \small
+  \begin{itemize}
+    \item \textbf{Concave impact everywhere.} Reported exponents $\delta_Q$ range from 0.4 to 0.7 across studies. On about 700,000 US stock orders executed by Citigroup, \citet{almgren2005direct} find a 3/5 power law. On nearly 500,000 trades in futures, \citet{toth2011anomalous} find $\delta_Q \approx 0.5$ for small-tick and $\approx 0.6$ for large-tick contracts, for $Q/V_D$ from a few $10^{-4}$ to a few percent.
+    \item \textbf{Sign memory.} Order signs on the LSE have autocorrelation decaying roughly as $\ell^{-0.6}$, offset by anticorrelated liquidity and volume \citep{lillo2004long}.
+    \item \textbf{All events have impact.} Limit orders and cancellations move prices too; for large-tick stocks a model with permanent impact per event fits, for small-tick stocks history dependence matters \citep{eisler2012price}.
+    \item \textbf{Consistency.} The latent book model gives square-root impact, contains the propagator model, and allows no price manipulation \citep{donier2015fully}. Exponential decay of impact is compatible only with linear impact \citep{gatheral2010no}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Discussion and takeaways}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{itemize}
+        \item The fill of a resting order is the start of someone's impact. A fill in the middle of a metaorder is followed by more of the same sign: long-horizon markouts measure this.
+        \item Impact decays, so part of the adverse move reverts. The split between transient and permanent impact sets whether to hedge or wait.
+        \item Do not estimate impact decay from the response function; use the propagator system with a long truncation lag.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Open questions}
+      \begin{itemize}
+        \item One mechanism for queue dynamics, sign memory and square-root impact.
+        \item Inferring the latent book online from fills and visible depth.
+        \item The latent book with finite memory: how much of impact becomes permanent, and on what time scale.
+      \end{itemize}
+      \textbf{Not tested here.} The square-root law is empirical; this repository solves one model of it, with no market data.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{impact.py} (propagator, estimation), \texttt{latent\_book.py}. Experiments: \texttt{e6\_propagator.py}, \texttt{e18\_propagator\_estimation.py}, \texttt{e19\_latent\_book.py}.
+\begin{verbatim}
+from stochastic_lob import latent_book as lb, impact as im
+lb.impact_peak(Q=100.0, T=1.0, L=1.0, D=1.0)        # closed form, ticks
+t, y = lb.simulate_metaorder(m=100.0, T=1.0)        # PDE check
+G = im.estimate_propagator(signs, dprice, max_lag=2000)
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

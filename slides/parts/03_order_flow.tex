@@ -1,0 +1,47 @@
+\section{Order flow}
+
+\begin{frame}{Order flow imbalance: linear impact at short horizons}
+  \footnotesize
+  From best-quote snapshots $n-1\to n$ \citep{cont2014price}:
+  \[ e_n = \mathbf{1}_{\{p_{B,n}\ge p_{B,n-1}\}} q_{b,n} - \mathbf{1}_{\{p_{B,n}\le p_{B,n-1}\}} q_{b,n-1} - \mathbf{1}_{\{p_{A,n}\le p_{A,n-1}\}} q_{a,n} + \mathbf{1}_{\{p_{A,n}\ge p_{A,n-1}\}} q_{a,n-1}. \]
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \small
+      New bids, cancelled asks and market buys push $e_n$ up. Summed over a window, $\OFI$ (orders) explains the mid change linearly:
+      \[ \Delta S/\delta = \kappa\,\OFI + \xi, \qquad \kappa \approx 1/(2\bar q), \]
+      with $\bar q$ the mean best-queue depth: a flat book of depth $\bar q$ moves one quote $e/\bar q$ ticks and the mid half as much.
+
+      \vspace{0.3em}
+      Simulated book: $\kappa = \EeightSlope$ against $1/(2\bar q) = \EeightStylized$; $R^2 = \EeightRsq$ over $\EeightN$ windows of $\EeightWindow$ s.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=0.88\textwidth]{fig7_ofi.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Beyond the best quotes: multi-level and integrated OFI}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig14_mlofi.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \textbf{Multi-level OFI}: the same formula at each level $m$ ticks from the best \citep{xu2019multi}. \textbf{Integrated OFI}: levels combined by the first principal component of depth-normalized OFIs \citep{cont2023cross}; dotted lines in (a).
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Out-of-sample $R^2$, $\Delta t = 10$ s: best level $\EfourteenLongOne$, $\EfourteenK$ levels $\EfourteenLongAll$, integrated $\EfourteenLongInt$. At $\Delta t = 2$ s: $\EfourteenShortOne$, $\EfourteenShortAll$, $\EfourteenShortInt$. Deeper queues decide how far the price moves once the best queue empties.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What the data say about order flow}
+  \small
+  \begin{itemize}
+    \item \textbf{Integrated OFI beats best-level OFI} for contemporaneous impact. Once multi-level OFI is used, \hl{contemporaneous cross-impact} between stocks adds no explanatory power, but lagged cross-asset OFI does forecast returns at short horizons \citep{cont2023cross}.
+    \item \textbf{Imbalance is a signal with a finite life.} It predicts future price moves and mean-reverts \citep{lehalle2019incorporating}. A signal's half-life sets how an LP should use it (next section).
+    \item \textbf{Deep models of the raw book}: convolutional and recurrent networks on the book forecast short-term moves out of sample \citep{zhang2019deeplob}; pooled training across stocks beats per-stock models, which points to a \hl{universal} price formation mechanism \citep{sirignano2019universal}; deep OFI features forecast a term structure of returns at several horizons \citep{kolm2023deep}.
+    \item \textbf{Hawkes with state dependence}: market order and mid-change rates depend mainly on volume imbalance, while limit and cancel rates do not \citep{wu2019queue}.
+  \end{itemize}
+\end{frame}

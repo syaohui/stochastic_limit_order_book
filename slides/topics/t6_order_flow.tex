@@ -1,0 +1,178 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Order Flow Imbalance and the Micro-Price}
+\subtitle{What moves the price at short horizons, and the best guess of where it goes}
+\decknumber{6}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      Over seconds, prices move because queues at the best quotes are added to and eaten. \hl{Which summary of order flow explains the move, and which summary of the book predicts the next one?}
+      \begin{itemize}
+        \item \textbf{Contemporaneous}: order flow imbalance (OFI) explains price changes in the same window.
+        \item \textbf{Predictive}: queue imbalance forecasts the next move; the micro-price turns it into a fair value.
+      \end{itemize}
+      An LP quotes around a fair value. Quoting around the mid when the micro-price is elsewhere hands edge to the next trader.
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item OFI: definition, linear impact, depth.
+          \item Multi-level and integrated OFI.
+          \item The micro-price and how to estimate it.
+          \item Evidence, and the statistics of overlapping windows.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Order flow imbalance}
+  \small
+  From consecutive best-quote snapshots $n-1 \to n$, with best bid and ask prices $p_B, p_A$ and sizes $q_b, q_a$ \citep{cont2014price}:
+  \[ e_n = \mathbf{1}_{\{p_{B,n}\ge p_{B,n-1}\}} q_{b,n} - \mathbf{1}_{\{p_{B,n}\le p_{B,n-1}\}} q_{b,n-1} - \mathbf{1}_{\{p_{A,n}\le p_{A,n-1}\}} q_{a,n} + \mathbf{1}_{\{p_{A,n}\ge p_{A,n-1}\}} q_{a,n-1}. \]
+  New bids, cancelled asks and market buys push $e_n$ up. Summed over a window of length $\Delta t$ (s), $\OFI = \sum e_n$ (shares or orders).
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Stylized model.} If every level holds $\bar q$ orders, $\OFI$ moves one quote by $\OFI/\bar q$ ticks and the mid by half as much:
+      \[ \Delta S/\delta = \kappa\,\OFI + \xi, \qquad \kappa \approx \frac{1}{2\bar q}, \]
+      with mid change $\Delta S$ (currency), tick $\delta$ and residual $\xi$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=0.68\textwidth]{fig7_ofi.png}
+
+      \raggedright\footnotesize Markovian book: $\kappa = \EeightSlope$ against $1/(2\bar q) = \EeightStylized$; $R^2 = \EeightRsq$, $\EeightN$ windows of $\EeightWindow$ s.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Deeper levels: multi-level and integrated OFI}
+  \centering
+  \includegraphics[width=0.78\textwidth]{fig14_mlofi.png}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \textbf{Multi-level OFI}: the same formula at each level $m$ ticks behind the best \citep{xu2019multi}. \textbf{Integrated OFI}: level OFIs divided by mean depth and combined with the first principal component weights \citep{cont2023cross}. Here the weights are $\EfourteenWeights$.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Out-of-sample $R^2$, $\Delta t = 10$ s ($\EfourteenLongN$ windows): best level $\EfourteenLongOne$, $\EfourteenK$ levels $\EfourteenLongAll$, integrated $\EfourteenLongInt$. At $\Delta t = 2$ s: $\EfourteenShortOne$, $\EfourteenShortAll$, $\EfourteenShortInt$. Once the best queue empties, the next level decides how far the price moves.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Statistics of OFI regressions}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Tautology.} OFI includes the events that move the price, so part of $R^2$ is mechanical. \citet{cont2014price} re-estimate without price-changing events: $R^2$ falls from about 65\% to the 35\% to 60\% range, still large.
+
+      \vspace{0.3em}
+      \textbf{Heteroskedasticity.} Residual variance follows depth and time of day. Use White (heteroskedasticity-consistent) errors; for regressions of estimated coefficients across windows, Newey-West errors.
+
+      \vspace{0.3em}
+      \textbf{Nonstationary coefficient.} $\kappa$ varies with depth inside the day, so estimate it on short subsamples (CKS: half an hour) or model $\kappa \propto \bar q^{-1}$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Overlapping horizons.} Forecast regressions of the mid change over $h$ on today's imbalance, with one sample per event, have strongly overlapping targets. Effective sample size is closer to $T/h$ than to the number of events. Block bootstrap or Hansen-Hodrick errors.
+
+      \vspace{0.3em}
+      \textbf{Out of sample.} Fit on the first half, test on the second; with many levels in-sample $R^2$ always rises.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The micro-price}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      State $x = (I, s)$: imbalance $I = q_b/(q_b + q_a)$ in buckets and spread $s$ (ticks). The micro-price \citep{stoikov2018micro} is the limit of the expected mid after the next $k$ mid changes:
+      \[ P^{\mathrm{micro}} = M + g_1(x) + g_2(x) + \cdots, \qquad g_{i+1} = B\,g_i , \]
+      with $M$ the mid (ticks). From consecutive observations:
+      \[ g_1 = (I_d - Q)^{-1} R\,K, \qquad B = (I_d - Q)^{-1} T, \]
+      where $Q$ holds transitions that keep the mid, $T$ those that change it, $R(x, k)$ the probability of a mid change of $k$ ticks, $K$ the vector of changes and $I_d$ the identity.
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{Symmetrize.} Each observation also enters mirrored ($I \to 1 - I$, $\Delta M \to -\Delta M$). Then $g_i$ is odd in imbalance and the series converges.
+
+      \vspace{0.3em}
+      \textbf{Compare with the weighted mid} $I p_A + (1 - I)p_B = M + (I - \tfrac12)s$, which has no justification beyond intuition and is not a martingale.
+
+      \vspace{0.3em}
+      \textbf{Assumption.} $(I, s)$ is Markov. It is not exactly: queue sizes, not only their ratio, matter (deck 2).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The micro-price on a simulated book}
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig20_microprice.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      Power-law book, $\EtwentyNevents$ events; first half trains, second half tests. (a) Model $\sum_{i\le k} g_i$ against realized mid changes after $k$ moves, block errors: in inner buckets the worst gap is $\EtwentyZmax$ s.e., a sign that $(I, s)$ is not quite Markov. $G$ reaches $\EtwentyGmax$ ticks at one-tick spread.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      (b) Mean squared error of the future mid relative to the mid: micro-price $\EtwentyMicroOne\%$ better at 1 s, weighted mid $\EtwentyWmidOne\%$; at 10 s, $\EtwentyMicroTen\%$ and $\EtwentyWmidTen\%$. In this book $G(I)$ is nearly linear, so the two are close; real books differ (next slide).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What the data show}
+  \small
+  \begin{itemize}
+    \item \textbf{OFI explains short-horizon moves.} Fifty S\&P 500 stocks drawn at random, TAQ data for April 2010, 10-second windows, half-hour regressions: average $R^2$ of 65\%. A quadratic term raises it only to 68\%. The slope is inversely proportional to depth; near the open depth is about half its average and impact about twice its average \citep{cont2014price}.
+    \item \textbf{Trades alone explain less.} The relation between price changes and trade volume is noisier and less robust than the one with OFI \citep{cont2014price}.
+    \item \textbf{Deeper levels help.} Multi-level OFI improves the fit over the best level \citep{xu2019multi}. Integrated OFI makes contemporaneous cross-impact between stocks redundant, while lagged cross-asset OFI forecasts short-horizon returns \citep{cont2023cross}.
+    \item \textbf{Micro-price.} Estimated on high-frequency data, it predicts short-term prices better than the mid or the weighted mid \citep{stoikov2018micro}.
+    \item \textbf{Deep models.} Networks on raw book states forecast short-term moves out of sample \citep{zhang2019deeplob}; deep OFI features forecast returns at several horizons \citep{kolm2023deep}; pooled training finds a universal price formation mechanism \citep{sirignano2019universal}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Discussion and takeaways}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{itemize}
+        \item Quote around the micro-price, not the mid. The gap is up to a few tenths of a tick at the extremes of imbalance here, comparable to half the spread.
+        \item OFI is contemporaneous; imbalance is predictive. A strategy can only use the second in real time.
+        \item Imbalance is a signal with a finite life. How much of it to put into quotes depends on that life (deck 7).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Open questions}
+      \begin{itemize}
+        \item A micro-price that uses queue sizes and recent flow, with uncertainty, and stays a martingale.
+        \item OFI across fragmented venues with latency between them.
+        \item Whether generative models of the book reproduce the OFI slope and its depth dependence (frontier part of the main deck).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{impact.py} (OFI, multi-level, integrated), \texttt{microprice.py}. Experiments: \texttt{e8\_ofi.py}, \texttt{e14\_mlofi.py}, \texttt{e20\_microprice.py}.
+\begin{verbatim}
+from stochastic_lob import microprice as mp
+idx, imb = mp.states(rec.q_bid, rec.q_ask, rec.best_ask - rec.best_bid)
+fit = mp.fit(idx[:n // 2], mid[:n // 2])          # g_1, B, G per state
+mid_, wmid, micro = mp.predictors(idx, imb, mid, spread, fit["G"])
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

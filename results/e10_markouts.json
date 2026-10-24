@@ -1,0 +1,11 @@
+{
+  "EtenNevents": "600{,}000",
+  "EtenNfills": "16{,}503",
+  "EtenDepShare": "0.28",
+  "EtenDepZero": "0.04 \\pm 0.01",
+  "EtenNondepZero": "0.61 \\pm 0.00",
+  "EtenDepTen": "0.03 \\pm 0.03",
+  "EtenNondepTen": "0.55 \\pm 0.02",
+  "EtenLowShare": "0.00 \\pm 0.03",
+  "EtenHighShare": "0.80 \\pm 0.03"
+}

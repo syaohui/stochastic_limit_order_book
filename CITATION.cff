@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use these slides or this code, please cite them as below."
+title: "stochastic-lob: Stochastic Models of the Limit Order Book, Order Flow, and Liquidity Provision"
+type: software
+authors:
+  - family-names: Shu
+    given-names: Yaohui
+    affiliation: Stony Brook University
+version: 0.3.0
+date-released: 2026-10-23
+license: MIT
+repository-code: "https://github.com/syaohui/stochastic_limit_order_book"
+keywords:
+  - limit order book
+  - market microstructure
+  - stochastic processes
+  - Hawkes process
+  - queueing theory
+  - price impact
+  - market making

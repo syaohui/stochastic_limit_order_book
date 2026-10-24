@@ -1,0 +1,25 @@
+\section{Open problems}
+
+\begin{frame}{Open problems: models}
+  \small
+  \textit{This list is our synthesis of the gaps visible in the work above, not a list taken from one source.}
+  \begin{enumerate}
+    \item \textbf{One model for three facts.} Queue-level dynamics, long-memory order signs, and square-root metaorder impact are each explained by a different model family. No tractable model yet produces all three from one mechanism.
+    \item \textbf{State plus history.} Queue-reactive models use the state, Hawkes models the past. Their union exists \citep{wu2019queue}, but estimation with power-law kernels, many event types and order sizes is still hard.
+    \item \textbf{Nonstationarity.} All models here are stationary. Intraday seasonality, news, and regime shifts change rates by large factors. Detecting regimes early, and quoting through them, is open.
+    \item \textbf{Causal validation of simulators.} Generative models match statistics; an LP needs the \emph{response} to its own orders. Benchmarks now include impact metrics \citep{nagy2025lobbench}, but no standard test checks counterfactual fills and markouts.
+    \item \textbf{Hidden and latent liquidity.} The visible book is a small slice of supply and demand \citep{donier2015fully}. Inferring the latent book online, from the visible book and fills, is open.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Open problems: liquidity provision}
+  \small
+  \begin{enumerate}
+    \setcounter{enumi}{5}
+    \item \textbf{Queue value in equilibrium.} Queue position has value (previous section). But every LP competes for the front; the equilibrium value of priority, and of speed spent to obtain it, needs game-theoretic models tied to measured queue dynamics.
+    \item \textbf{Signals with finite life in optimal control.} Exact market making assumes a permanent drift. Short-lived signals need a larger state (signal plus inventory). We show that naive use hurts and that shrinkage helps; the optimal map from signal half-life to quotes is open in closed form.
+    \item \textbf{Real-time toxicity with uncertainty.} Markouts reveal toxicity only after the fact. Predicting it per fill, with calibrated uncertainty, under feedback (toxic clients adapt), is open \citep{cartea2023detecting}.
+    \item \textbf{Multi-asset and cross-venue.} Lagged cross-impact forecasts returns \citep{cont2023cross}, and multi-asset quotes beat independent ones \citep{gueant2017optimal}. Fragmented venues, latency between them, and inventory netting across assets remain hard.
+    \item \textbf{LOB versus AMM design.} Fees and block times trade LP losses against trader costs \citep{milionis2023fees}. Which design minimizes total cost of liquidity for a given asset is an open design question.
+  \end{enumerate}
+\end{frame}

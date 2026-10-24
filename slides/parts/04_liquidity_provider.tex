@@ -1,0 +1,235 @@
+\section{The liquidity provider's problems now}
+
+% ---------------------------------------------------------------- markouts
+\begin{frame}{Markouts: which fills are toxic}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig10_markouts.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Markout of a passive fill at horizon $h$ (s): $M(h) = \varepsilon\,(p - S_{t+h})$ ticks, with $\varepsilon = +1$ for a passive sale. Markovian book, $\EtenNfills$ fills in $\EtenNevents$ events; bars at two standard errors.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item (a) $\EtenDepShare$ of fills \hl{empty the queue}; they keep $\EtenDepZero$ ticks against $\EtenNondepZero$.
+        \item (b) Thin passive side ($\rho$ low): $\EtenLowShare$; thick side: $\EtenHighShare$ ticks.
+        \item No informed traders here: queue mechanics alone create adverse selection.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- queue position
+\begin{frame}{Queue position: a model with informed sweeps}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      We hold one sell order at the best ask with $a$ orders ahead and $b$ behind; the bid queue holds $c$. Rates (s$^{-1}$):
+      \begin{itemize}
+        \item market buys $\mu$ hit the \emph{front} of the queue;
+        \item limit sells $\lambda$ join \emph{behind} us;
+        \item each other order cancels at $\theta$;
+        \item informed \hl{sweeps} at rate $\nu$ take the whole queue and move fair value $J$ ticks; a sweep of the bid moves the price away.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \small
+      Markout per fill, against the mid after the next price change:
+      \[ \tfrac12 - \mathrm{AS}, \quad \mathrm{AS} = \begin{cases} 1 & \text{queue emptied}\\ 2P_\uparrow(c,b) - 1 & b>0\\ J & \text{sweep.}\end{cases} \]
+      Here $P_\uparrow(c,b)$ is the probability that the ask queue empties before the bid queue.
+      Fill probability and value solve a sparse linear system on $(a,b,c)$; checked by Monte Carlo and truncation.
+
+      \vspace{0.3em}
+      Idea from \citet{moallemi2017queue}: small orders fill the front, sweeps fill everyone.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The value of queue position}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig9_queue_value.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Queue of $\EnineQtot$ orders including ours, bid queue $\EnineCzero$; $\lambda = 1$, $\mu = 0.9$, $\theta = 0.01$ s$^{-1}$; sweeps $\nu = \EnineNu$ s$^{-1}$ with $J = 2$ ticks.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item Front: fill probability $\EnineFrontFill$, $\EnineFrontPerFill$ ticks per fill. Back: $\EnineBackFill$ and $\EnineBackPerFill$.
+        \item Joining behind $a = \EnineBreakEven$ loses money. Without sweeps the curve is flat ($\EnineZIFront$ to $\EnineZIBack$).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- latency
+\begin{frame}{Latency: the race for stale quotes}
+  \small
+  When public information arrives, fast traders race to trade against quotes that have not yet moved, and LPs race to cancel them.
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Measured} on London Stock Exchange message data, including failed orders \citep{aquilina2022quantifying}:
+      \begin{itemize}
+        \item about one race per minute per FTSE 100 symbol, lasting microseconds;
+        \item about 20\% of trading volume;
+        \item about a third of price impact and of effective spread;
+        \item eliminating races would cut the cost of liquidity by about 17\%.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Design response.} Continuous trading makes speed a prisoner's dilemma; frequent batch auctions turn competition on speed into competition on price \citep{budish2015high}.
+
+      \vspace{0.4em}
+      \textbf{In the models.} Races play the role of the sweeps on the previous slide: a stale quote is filled exactly when it should not be. Speed buys a lower effective $\nu$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- optimal quoting
+\begin{frame}{Optimal quotes with inventory limits: the exact solution}
+  \small
+  Mid $\dd S = m\,\dd t + \sigma\,\dd W$; a quote $d$ away fills at rate $A e^{-kd}$; the LP maximizes $\E[-e^{-\gamma(x_T + y_T S_T)}]$ with $|y| \le Q$ (shares). Here $m$ is a drift (ticks s$^{-1}$), $A$ (s$^{-1}$) and $k$ (tick$^{-1}$) set the fill rate, $\gamma$ (tick$^{-1}$) is risk aversion.
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Avellaneda-Stoikov} expand in inventory \citep{avellaneda2008high}:
+      \[ r_t = S_t - y\gamma\sigma^2(T-t), \]
+      \[ d^a + d^b = \gamma\sigma^2(T-t) + \tfrac{2}{\gamma}\ln\big(1+\tfrac{\gamma}{k}\big). \]
+      Accurate only near the horizon.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{GLFT} make the Hamilton-Jacobi-Bellman (HJB) equation linear \citep{gueant2013dealing}: $v(t) = e^{-M(T-t)}\mathbf{1}$ with tridiagonal $M$,
+      \[ d^b(t,y) = \tfrac1k\ln\tfrac{v_y}{v_{y+1}} + \tfrac1\gamma\ln\big(1+\tfrac\gamma k\big), \]
+      and the mirror formula for $d^a$. A drift enters $M$ only through its diagonal. Details in the backup slides.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exact quotes against approximations}
+  \centering
+  \includegraphics[width=0.84\textwidth]{fig11_glft_exact.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      (a) Long-horizon exact quotes match the closed form within $\EelevenMaxApproxErr$ ticks near $y = 0$; the AS expansion at $t = 0$ overreacts. (b) Quotes are stationary after about 200 s. (c) Drift tightens one side and widens the other.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \scriptsize
+      \input{../results/e11_table.tex}
+
+      \vspace{0.2em}
+      $\EelevenNpaths$ paths; CE: certainty equivalent (ticks). GLFT example parameters: $\sigma = 0.3$ tick s$^{-1/2}$, $A = 0.9$ s$^{-1}$, $k = 0.3$ tick$^{-1}$, $\gamma = 0.01$ tick$^{-1}$, $T = 600$ s, $Q = 30$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- signals
+\begin{frame}{Quoting with a short-term signal}
+  \begin{columns}[c]
+    \begin{column}{0.47\textwidth}
+      \centering
+      \includegraphics[width=0.98\textwidth]{fig12_signal.png}
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \small
+      Drift $\pm m_0$ (ticks s$^{-1}$) flips sign at random, mean life $1/\kappa$ (s). Exact GLFT treats a drift as \emph{permanent}, so the LP plugs in $s\,m(t)$ with shrinkage $s \in [0,1]$.
+      \begin{itemize}
+        \item Life 300 s: best $s = \EtwelveSlowBest$, gain $\EtwelveSlowBestGain$ ticks of CE.
+        \item Life 60 s: raw use \hl{loses} $\EtwelveFastRaw$; $s = \EtwelveFastBest$ gains $\EtwelveFastBestGain$.
+      \end{itemize}
+      The signal's life relative to inventory turnover sets how much to use. Paired runs, bootstrap s.e.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Toxic flow, brokers and internalization}
+  \small
+  A dealer or broker sees \emph{who} trades. That changes the problem from ``how wide'' to ``with whom''.
+  \begin{itemize}
+    \item \citet{cartea2025brokers}: a broker quotes to informed and uninformed clients and trades in the lit market. It learns a trend signal from the informed flow and decides what to internalize and what to pass on.
+    \item \citet{cartea2023detecting}: predicting which client trades are toxic, with neural networks trained by a fast online Bayesian method; on foreign exchange data this beats logistic regression and random forests in profit.
+    \item Markouts are the label; the forecast must come before the fill. The queue-position and markout results above show that the label depends on queue state as well as on the client.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------- AMM
+\begin{frame}{Liquidity in an AMM: loss-versus-rebalancing}
+  \small
+  An AMM LP holds $x(P)$ units of the risky asset and is arbitraged to the exchange price $P$, a geometric Brownian motion with volatility $\sigma$ (day$^{-1/2}$). Against a strategy that holds the same $x(P)$ but trades at $P$, it loses at the rate \citep{milionis2022automated}
+  \[ \frac{\dd\,\mathrm{LVR}}{\dd t} = \frac{\sigma^2P^2}{2}\,|x'(P)| = \frac{\sigma^2}{8}\,V \quad \text{(constant product, value } V = 2L\sqrt P). \]
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Exact mean: $\E[\mathrm{LVR}_T] = V_0(1 - e^{-\sigma^2 T/8})$.
+        \item Fees $f$ and discrete blocks create a no-trade band; arbitrage profit falls and part of LVR returns as fees \citep{milionis2023fees}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{itemize}
+        \item Concentrated liquidity on $[P/w, Pw]$ (derived here, backup slide):
+        \[ \frac{\mathrm{LVR}}{V} = \frac{\sigma^2}{8\,(1 - w^{-1/2})}. \]
+      \end{itemize}
+      LP losses here are adverse selection, the same economics as stale quotes in a book.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{LVR: fees, block time and concentration}
+  \centering
+  \includegraphics[width=0.84\textwidth]{fig13_lvr.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      (a) $\sigma = \EthirteenSigma$ day$^{-1/2}$, about 76\% a year: LVR costs $\EthirteenAnnualLVR$\% of capital per year; 30-day simulation $\EthirteenSimThirty$\% against exact $\EthirteenExactThirty$\%.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      (b) At 5 bp and 12 s blocks, arbitrage keeps $\EthirteenArbFiveTwelve$ and fees return $\EthirteenFeeFiveTwelve$ of no-fee LVR; faster blocks cut arbitrage further. Zero fee drawn at 0.3 bp. (c) A $w = 1.1$ range pays $\EthirteenAmpTen\times$ the full-range LVR per unit capital.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Measuring it on real data: pitfalls}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Markouts}
+      \begin{itemize}
+        \item Choose the benchmark: mid or micro-price at fill time changes the split between spread and adverse selection.
+        \item Overlapping horizons make fills correlated; use block bootstrap or autocorrelation-robust errors.
+        \item Clock time and event time give different curves; report both.
+      \end{itemize}
+      \textbf{Fill probabilities}
+      \begin{itemize}
+        \item Cancelled orders are censored; use survival analysis. First-passage approximations are poor stand-ins for real executions \citep{lo2002econometric}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Queue position}
+      \begin{itemize}
+        \item Needs order-level (market-by-order) messages and FIFO bookkeeping; hidden and iceberg orders break it.
+      \end{itemize}
+      \textbf{Hawkes and order flow}
+      \begin{itemize}
+        \item Timestamp resolution and same-time bursts bias kernel estimates at short lags.
+        \item Remove intraday seasonality before fitting; otherwise it looks like excitation.
+      \end{itemize}
+      \textbf{Everything}
+      \begin{itemize}
+        \item Fit out of sample and by regime; report uncertainty with every number.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What a liquidity provider should take away}
+  \small
+  \begin{enumerate}
+    \item \textbf{Measure markouts, not fill rates.} Spread capture is visible on every fill; adverse selection shows up only in $M(h)$. Condition it on queue state and imbalance.
+    \item \textbf{Priority is an asset with a price.} The front of a queue is worth more than the back, and the gap grows with the rate of informed sweeps. Joining a long queue late can have negative value.
+    \item \textbf{Use the exact control solution.} With inventory limits, the GLFT matrix exponential is cheap and beats the AS expansion; the stationary quotes are a single eigenvector.
+    \item \textbf{Shrink signals by their life.} A permanent-drift model fed a short-lived signal loses money; the right shrinkage turns the same signal into a gain.
+    \item \textbf{Same economics on chain.} AMM LPs pay LVR to arbitrageurs as book LPs pay latency arbitrageurs; fees, block time and range width set the bill.
+  \end{enumerate}
+\end{frame}

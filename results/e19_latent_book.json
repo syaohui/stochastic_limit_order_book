@@ -1,0 +1,11 @@
+{
+  "EnineteenMaxErr": "0.8",
+  "EnineteenErrCoarse": "1.5",
+  "EnineteenErrFine": "0.8",
+  "EnineteenUmax": "100",
+  "EnineteenExpoLow": "1.000",
+  "EnineteenExpoHigh": "0.501",
+  "EnineteenRemainSlow": "0.24",
+  "EnineteenRemainFast": "0.37",
+  "EnineteenRemainLin": "0.24"
+}

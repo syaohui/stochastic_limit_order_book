@@ -1,0 +1,184 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Self-Exciting Order Flow}
+\subtitle{Hawkes processes: model, estimation, and how the branching ratio is misread}
+\decknumber{4}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      Orders cluster in time: one trade triggers others, cancellations come in bursts. \hl{How much of market activity is triggered by market activity itself?}
+      \begin{itemize}
+        \item The share of endogenous events, the branching ratio, is a measure of reflexivity.
+        \item Near-critical excitation links millisecond order flow to rough volatility over hours.
+        \item For an LP, clustering means fills and adverse moves arrive in bursts, not evenly.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item The process and its cluster picture.
+          \item Exact likelihood and diagnostics.
+          \item The Hawkes price model and the signature plot.
+          \item Three ways an exponential fit misreads the branching ratio.
+          \item The criticality debate.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The process}
+  \small
+  For event types $u, v$ (buy, sell, cancel, \ldots) with event times $t^v_j$, the intensity (s$^{-1}$) is
+  \[ \Lambda_u(t) = \Lambda^0_u + \sum_v \sum_{t^v_j < t} \phi_{uv}(t - t^v_j), \]
+  with baseline $\Lambda^0_u$ (s$^{-1}$) and kernels $\phi_{uv} \geq 0$ (s$^{-1}$). Write $G_{uv} = \int_0^\infty \phi_{uv}(t)\,\dd t$ (dimensionless).
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Cluster picture.} Immigrants arrive at rate $\Lambda^0$; each type-$v$ event has on average $G_{uv}$ direct children of type $u$. The process is stationary iff the spectral radius $\rho(G) < 1$, and then
+      \[ \bar\Lambda = (I - G)^{-1}\Lambda^0 . \]
+      In one dimension $n = G$ is the \hl{branching ratio}: the share of events that are endogenous.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Exponential kernel} $\phi(t) = \alpha e^{-\beta t}$, with jump $\alpha$ and decay $\beta$ (s$^{-1}$): $n = \alpha/\beta$, and the intensity is Markov, so the likelihood takes one pass.
+
+      \vspace{0.3em}
+      \textbf{Power-law kernel} $\phi(t) \propto (t + \tau_0)^{-(1+\epsilon)}$, with cut-off $\tau_0$ (s) and tail exponent $\epsilon > 0$: memory over many time scales, as in data.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Likelihood and diagnostics}
+  \small
+  On $[0, T]$ the log-likelihood of a point process with intensity $\Lambda_u$ is
+  \[ \ell = \sum_u\Big[\sum_j \ln\Lambda_u(t^u_j) - \int_0^T \Lambda_u(t)\,\dd t\Big]. \]
+  For exponential kernels both terms update recursively, so $\ell$ costs $O(N)$ for $N$ events. Standard errors come from the inverse observed information.
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Time-rescaling test.} With compensator $\mathcal{A}_u(t) = \int_0^t \Lambda_u$, the increments $\mathcal{A}_u(t^u_j) - \mathcal{A}_u(t^u_{j-1})$ are i.i.d.\ unit exponential under the true model. A Kolmogorov-Smirnov (KS) test checks them.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Nonparametric kernels.} For slowly decaying kernels, \citet{bacry2016estimation} estimate $\phi$ from the empirical covariance of event counts by solving a Wiener-Hopf equation, over lags from microseconds to minutes.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Fitting buy and sell market orders}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig4_hawkes.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Bivariate exponential Hawkes model of buys and sells, $T = \EfourT$ s: $\EfourNbuy$ buys and $\EfourNsell$ sells, true spectral radius $\rho(G) = \EfourRho$. (a) Intensities over one minute.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      MLE recovers all ten parameters within $\EfourMaxZ$ standard errors. (b) Rescaled waiting times are unit exponential: KS $p = \EfourKSbuy$ and $\EfourKSsell$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{A Hawkes price: microstructure noise from cross-excitation}
+  \begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \small
+      Up ticks $N_+$ and down ticks $N_-$, price $X = N_+ - N_-$ (ticks), self jump $\alpha_s$, cross jump $\alpha_c$, common decay $\beta$ \citep{bacry2013modelling}. With $g = (\alpha_s - \alpha_c)/\beta$ and $\eta_H = \beta(1 - g)$ (s$^{-1}$),
+      \[ C(h) = 2\bar\Lambda\Big[\tfrac{1}{(1-g)^2} + \Big(1 - \tfrac{1}{(1-g)^2}\Big)\tfrac{1 - e^{-\eta_H h}}{\eta_H h}\Big] \]
+      is the realized variance per unit time at sampling interval $h$ (ticks$^2$ s$^{-1}$), with $\bar\Lambda$ the mean rate per side.
+      \begin{itemize}
+        \item $\alpha_c > \alpha_s$: an up tick triggers down ticks, $C(h)$ falls with $h$: the signature plot of bid-ask bounce.
+        \item Simulation within $\EfiveMaxZ$ s.e.\ over 42 points.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{fig5_signature.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Three ways to misread the branching ratio}
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig17_hawkes_pitfalls.png}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      (a) Truth: a sum of 16 exponentials that follows $(t + \tau_0)^{-1.15}$ from $0.1$ s to about $10^4$ s, with $n = 0.9$.
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      (b) An exponential kernel fitted on windows from 1 min to 8 h finds $\hat n = \EseventeenShort$ to $\EseventeenLong$, with decay time $1/\hat\beta \approx \EseventeenBetaInv$ s. It misses more than half the excitation at every window length.
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      (c) Pure Poisson data ($n = 0$), $\EseventeenDays$ days each: a U-shaped intraday rate gives $\hat n = \EseventeenSeasonRaw$; after a time change by the estimated profile, $\EseventeenSeasonDes$. Random rate regimes: $\EseventeenSwitch$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Why the fits go wrong}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Nonstationary baseline.} A slow change in the baseline rate looks to the likelihood like a long cluster. A slowly decaying exponential ($1/\hat\beta$ of about 100 s here) absorbs it and reports $\hat n$ close to one. This is the result of \citet{filimonov2015apparent}: Poisson data with regime changes give spurious near-critical branching ratios.
+
+      \vspace{0.3em}
+      \textbf{Remedy.} Estimate the seasonal profile across days and change time by its integral, $t \mapsto \int_0^t \hat\Lambda^0(s)\,\dd s$, before fitting. Regime changes need a model of their own.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Misspecified kernel.} A single exponential has one time scale. Faced with excitation spread over six decades, the likelihood settles on the fast part and reports less than half of $n$, whatever the window.
+
+      \vspace{0.3em}
+      \textbf{Remedy.} Use kernels with many time scales (sums of exponentials or power laws), nonparametric estimation, and check residuals with the time-rescaling test.
+
+      \vspace{0.3em}
+      \textbf{Other traps.} Coarse timestamps and simultaneous events bias short-lag excitation; edge effects (no history before the window) bias $\hat n$ down.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What the data show}
+  \small
+  \begin{itemize}
+    \item \textbf{Critical reflexivity.} For mid-price changes of the E-mini S\&P 500 futures, 1998 to 2011, a power-law kernel with exponent near $-1.15$ below $10^3$ s and near $-1.45$ from $10^3$ to $10^6$ s integrates to about one in every two-month period: the market is, and was, close to critical \citep{hardiman2013critical}.
+    \item \textbf{Why exponential fits disagreed.} Fitting exponential kernels on 30-minute windows to synthetic critical power-law data gives sub-critical branching ratios that rise as the short-time cut-off falls, which can mimic a rise in reflexivity over the years \citep{hardiman2013critical}.
+    \item \textbf{The counterpoint.} Regime shifts and outliers bias $\hat n$ upward, and calibration on Poisson data with regime changes gives $n \approx 1$ when the truth is zero \citep{filimonov2015apparent}.
+    \item \textbf{Many dimensions.} Nonparametric estimation on an eight-dimensional order book model finds slowly decaying kernels over lags from about 10 $\mu$s to 100 s \citep{bacry2016estimation}. Survey: \citet{bacry2015hawkes}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{From order flow to rough volatility}
+  \small
+  \begin{itemize}
+    \item As $\rho(G) \to 1$ with the horizon, suitably rescaled nearly unstable Hawkes processes converge to an integrated Cox-Ingersoll-Ross-type process \citep{jaisson2015limit}. Later work with heavy-tailed kernels obtains \hl{rough} limits, with Hurst exponent below one half.
+    \item Adding no-arbitrage, buy-sell asymmetry and metaorder splitting gives the rough Heston model with leverage \citep{eleuch2018microstructural}; recent work adds common price and volatility jumps \citep{wang2026rough}.
+    \item For an LP: the branching ratio estimated from milliseconds of order flow and the volatility hedged over hours are two views of one process. Mis-estimating $n$ (previous slides) mis-estimates both.
+  \end{itemize}
+  \vspace{0.4em}
+  \begin{alertblock}{Takeaways}
+    \small
+    Fit with kernels that have many time scales; remove seasonality first; test residuals; and distrust a branching ratio near one until regime changes are ruled out. The criticality question is open because each answer depends on these choices.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{hawkes.py}. Experiments: \texttt{e4\_hawkes.py}, \texttt{e5\_signature.py}, \texttt{e17\_hawkes\_pitfalls.py}.
+\begin{verbatim}
+from stochastic_lob import hawkes as hk
+w, beta = hk.power_law_weights(n=0.9, eps=0.15, tau0=0.1, beta_min=1e-4)
+model = hk.SumExpHawkes1D(mu=0.05, w=w, beta=beta)
+t = model.simulate(T=3e4, rng=1)
+mu, n_hat, beta_hat, se = hk.fit_exp_hawkes_1d(t, 3e4)
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

@@ -1,0 +1,8 @@
+{
+  "EelevenMaxApproxErr": "0.001",
+  "EelevenHalfSpreadZero": "3.31",
+  "EelevenCEexact": "1291.9",
+  "EelevenCEas": "1277.7",
+  "EelevenCEsym": "1227.7",
+  "EelevenNpaths": "2{,}000"
+}

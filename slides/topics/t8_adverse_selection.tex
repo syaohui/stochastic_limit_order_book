@@ -1,0 +1,186 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Adverse Selection and Queue Priority}
+\subtitle{Who fills you, when, and what the fill is worth}
+\decknumber{8}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      A passive fill earns half the spread. It also tells you that someone wanted to trade with you \emph{now}. \hl{How much of the spread is given back to the price move that follows, and what decides it?}
+      \begin{itemize}
+        \item Information: some traders know more (Glosten-Milgrom, Kyle).
+        \item Queue mechanics: the fill that empties a queue comes right before the price moves through it.
+        \item Speed: stale quotes are picked off in latency races.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item The exact P\&L split and markouts.
+          \item Glosten-Milgrom: the spread as the price of information.
+          \item Toxicity from queue mechanics alone.
+          \item The value of queue position.
+          \item Latency races and toxic flow: evidence.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The accounting identity}
+  \small
+  Fill $j$ at time $t_j$ (s) and price $p_j$, with $\varepsilon_j = +1$ if the LP sold and $-1$ if it bought; inventory $y_t = -\sum_{t_j<t}\varepsilon_j$ (shares); mid $S_t$. Starting flat, the marked-to-market P\&L $\Pi_T$ is exactly
+  \[ \Pi_T = \underbrace{\sum_j \varepsilon_j(p_j - S_{t_j})}_{\text{spread captured}} + \underbrace{\int_0^T y_{t^-}\,\dd S_t}_{\text{inventory P\&L}} . \]
+  Fill by fill, at horizon $h$ (s), the \hl{markout} is
+  \[ M_j(h) = \varepsilon_j(p_j - S_{t_j + h}) = \underbrace{\varepsilon_j(p_j - S_{t_j})}_{\text{half-spread}} - \underbrace{\varepsilon_j(S_{t_j + h} - S_{t_j})}_{\text{adverse selection}} . \]
+  \begin{itemize}
+    \item Expected adverse selection is the expected price move against the LP after a fill. Every model in this deck is a model of that term.
+    \item Measurement: choose the benchmark (mid or micro-price), horizons in clock and event time, and errors robust to overlapping horizons.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Glosten-Milgrom: the spread is the price of information}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      Value $V \in \{V_L, V_H\}$ (price units), belief $\pi = P(V = V_H)$. Each period one trader: informed with probability $\alpha$ (trades in the direction of $V$), otherwise buys or sells with probability $\tfrac12$. A competitive, risk-neutral market maker sets
+      \[ a = \E[V \mid \text{buy}], \qquad b = \E[V \mid \text{sell}] . \]
+      With $P(\text{buy} \mid H) = \alpha + \tfrac{1-\alpha}{2}$ and $P(\text{buy} \mid L) = \tfrac{1-\alpha}{2}$, at $\pi = \tfrac12$:
+      \[ a - b = \alpha(V_H - V_L) . \]
+      After each trade $\pi$ is updated by Bayes' rule; the spread closes as prices learn $V$ \citep{glosten1985bid}.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Kyle (1985)}, one period: noise trades with standard deviation $\sigma_u$ (shares), value with standard deviation $\sigma_v$. In equilibrium the price moves linearly in net order flow, with slope
+      \[ \lambda_K = \frac{\sigma_v}{2\sigma_u} \]
+      (price per share): impact is the market's inference about information \citep{kyle1985continuous}.
+
+      \vspace{0.3em}
+      Both models: \hl{zero expected profit} for the market maker; gains from uninformed traders pay exactly for losses to informed ones.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Glosten-Milgrom simulated}
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig22_glosten_milgrom.png}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \footnotesize
+      (a) $\EtwentytwoPaths$ paths per $\alpha$, $V_H - V_L = 1$. The first spread is $\alpha$ exactly ($\EtwentytwoSpreadZero$ at $\alpha = 0.3$). The mean spread halves after $\EtwentytwoHalfLifeHigh$ trades at $\alpha = 0.5$, $\EtwentytwoHalfLife$ at $0.3$, and not within 60 trades at $0.1$.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \footnotesize
+      (b) Markout against the true value, per trade, at $\alpha = 0.3$: $+\EtwentytwoU$ against uninformed traders, $\EtwentytwoI$ against informed ones, $\EtwentytwoAll$ overall (zero profit). Standard errors from path means.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Toxicity without information}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig10_markouts.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Passive fills in the zero-intelligence Markovian book (deck 1): nobody is informed. $\EtenNfills$ fills in $\EtenNevents$ events; bars at two standard errors.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item (a) $\EtenDepShare$ of fills \hl{empty the queue}; they keep $\EtenDepZero$ ticks against $\EtenNondepZero$ for the others.
+        \item (b) Fills on a thin side keep $\EtenLowShare$ ticks; on a thick side $\EtenHighShare$.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \small Adverse selection is partly mechanical: the fill that takes the last order is the fill that moves the price.
+\end{frame}
+
+\begin{frame}{The value of queue position}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      One sell order at the best ask with $a$ orders ahead and $b$ behind; bid queue $c$. Rates (s$^{-1}$): market buys $\mu$ hit the front, limit sells $\lambda$ join the back, each other order cancels at $\theta$, and informed \hl{sweeps} at rate $\nu$ take the whole queue and move fair value $J$ ticks (idea from \citet{moallemi2017queue}).
+      \vspace{0.3em}
+
+      Value per fill against the mid after the next price change: $\tfrac12 - \mathrm{AS}$, with AS $= 1$ if the fill empties the queue, $2P_\uparrow(c, b) - 1$ otherwise, $J$ after a sweep. Solved exactly as an absorbing Markov chain on $(a, b, c)$.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{fig9_queue_value.png}
+
+      \raggedright\footnotesize
+      Queue of $\EnineQtot$, bid $\EnineCzero$, $\nu = \EnineNu$ s$^{-1}$, $J = 2$. Front: fill probability $\EnineFrontFill$, $\EnineFrontPerFill$ ticks per fill. Back: $\EnineBackFill$, $\EnineBackPerFill$. Joining behind $\EnineBreakEven$ orders loses money; without sweeps the curve is flat.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Latency races and toxic flow: the evidence}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Races.} London Stock Exchange message data, including failed orders \citep{aquilina2022quantifying}:
+      \begin{itemize}
+        \item about one race per minute per FTSE 100 symbol, lasting microseconds;
+        \item about 20\% of trading volume;
+        \item about a third of price impact and of the effective spread;
+        \item eliminating races would cut the cost of liquidity by about 17\%.
+      \end{itemize}
+      \textbf{Design.} Frequent batch auctions replace competition on speed with competition on price \citep{budish2015high}.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Who is toxic.} A broker that sees client identities can learn a trend signal from informed flow and choose what to internalize \citep{cartea2025brokers}. Neural networks trained by an online Bayesian method predict which client trades are toxic, beating logistic regression and random forests in profit on foreign exchange data \citep{cartea2023detecting}.
+
+      \vspace{0.3em}
+      \textbf{In the models.} A race is a sweep: the stale quote is filled exactly when it should not be. Speed buys a lower effective $\nu$ in the queue model.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Discussion and takeaways}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{enumerate}
+        \item Measure markouts, not fill rates; condition them on queue state, imbalance and counterparty.
+        \item Priority is an asset. Its value grows with the rate of informed sweeps; joining a long queue late can have negative value.
+        \item In Glosten-Milgrom the spread is set by $\alpha$. When informed flow rises, widen or step back; when it falls, competition closes the spread.
+        \item Some adverse selection is mechanical and predictable from the book alone.
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Assumptions.} Queue model: one-tick spread, unit orders, sweeps as Poisson events, value measured at the next price change. Glosten-Milgrom: one asset value, unit trades, competitive zero profit.
+
+      \vspace{0.3em}
+      \textbf{Open questions}
+      \begin{itemize}
+        \item The equilibrium value of priority when every LP competes for the front.
+        \item Real-time toxicity forecasts with calibrated uncertainty, when toxic traders adapt.
+        \item Measuring $\nu$ from market-by-order data.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{adverse\_selection.py}, \texttt{markouts.py}, \texttt{queue\_position.py}. Experiments: \texttt{e9}, \texttt{e10}, \texttt{e22}.
+\begin{verbatim}
+from stochastic_lob import adverse_selection as gm, queue_position as qp
+sim = gm.simulate(alpha=0.3, n_trades=60, n_paths=10_000)
+gm.markouts_vs_value(sim)                        # all, uninformed, informed
+r = qp.QueueRates(lam=1.0, mu=0.9, theta=0.01, nu=0.03, jump=2.0)
+V = qp.solve_queue_value(r, a_max=15)            # fill prob. and value by (a, b, c)
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

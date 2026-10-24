@@ -1,0 +1,154 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Queue-Reactive Models}
+\subtitle{When order flow reacts to the queue it sees}
+\decknumber{3}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      Traders look at the book before they act. A short best queue invites market orders; a long one invites patience. \hl{What happens if every intensity is a function of the queue it acts on?}
+      \begin{itemize}
+        \item The queue's stationary law follows in closed form, and every rate can be estimated nonparametrically.
+        \item Adding a reference price that moves when a queue empties gives a full price model.
+        \item The model separates volatility made by the book from volatility brought in by news.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item Model I: independent birth-death queues.
+          \item Estimating intensities with confidence bands.
+          \item Model III: the reference price, mechanical volatility, mean reversion.
+          \item The France Telecom evidence of \citet{huang2015simulating}.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Model I: a birth-death chain per queue}
+  \small
+  Queue size $q$ in units of the average event size at that level (AES, shares). At each level:
+  \[
+    q \to q + 1 \text{ at } \lambda^L(q), \qquad q \to q - 1 \text{ at } \lambda^C(q) + \lambda^M(q),
+  \]
+  limit orders, cancellations and market orders, all in s$^{-1}$, with $\lambda^C(0) = \lambda^M(0) = 0$.
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      If the sum converges, detailed balance gives the stationary law
+      \[ \pi(q) = \pi(0)\prod_{j=1}^{q}\frac{\lambda^L(j-1)}{\lambda^C(j) + \lambda^M(j)} . \]
+      \begin{itemize}
+        \item Two assets with very different flows but the same arrival-to-departure ratios have the same queue distribution.
+        \item The Poisson model of deck 1 is the special case $\lambda^L$ constant, $\lambda^C(q) = \theta q$, $\lambda^M$ constant.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{fig3_queue_reactive.png}
+
+      \raggedright\footnotesize Product formula against a simulated queue of $\EthreeNevents$ events: total variation distance $\EthreeTV$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Estimation}
+  \small
+  Record, for every event at a queue, the waiting time $\Delta t$ since the previous event there, the queue size $q$ before it, and its type. With $\tau(n)$ the total time (s) spent at size $n$ and $N_x(n)$ the number of type-$x$ events at size $n$, the likelihood factorizes and
+  \[ \hat\lambda^x(n) = \frac{N_x(n)}{\tau(n)}, \qquad \mathrm{s.e.} = \frac{\sqrt{N_x(n)}}{\tau(n)}, \qquad x \in \{L, C, M\}. \]
+  This is the estimator of \citet{huang2015simulating}, $\hat\Lambda(n)$ times the share of type $x$, with $\hat\Lambda(n) = 1/\text{mean waiting time at } n$, written in exposure form. It needs no parametric shape.
+  \vspace{0.3em}
+  \begin{itemize}
+    \item The last spell is censored: it ends at the end of the sample, not at an event. It adds exposure but no event.
+    \item Restart the recording whenever the reference price moves, as HLR do: the queue at a level changes meaning.
+    \item Queue sizes in AES units are rounded up; the AES differs by level, which matters when queues shift.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Recovered intensities and the price in Model III}
+  \centering
+  \includegraphics[width=0.88\textwidth]{fig16_queue_reactive_price.png}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.33\textwidth}
+      (a) Shapes chosen to match HLR's findings (next slides). $\EsixteenEvents$ events; every intensity with at least 30 events at its size is within $\EsixteenMaxZ$ s.e.
+    \end{column}
+    \begin{column}{0.63\textwidth}
+      (b), (c) Reduced Model III (two levels per side), $2\times10^5$ s per point, batch-means errors. With no news ($\theta_{\mathrm{reinit}} = 0$) the price mean-reverts strongly: $\eta = \EsixteenEtaSevenZero$ at $\theta = 0.7$ and $\EsixteenEtaMech$ at $\theta = 1$. At HLR's calibration $\theta_{\mathrm{reinit}} = 0.85$, $\eta = \EsixteenEtaSevenHLR$ and the 10-minute volatility rises from $\EsixteenVolSevenZero$ to $\EsixteenVolSevenHLR$ ticks, although moves are fewer ($\EsixteenMovesSevenZero$ to $\EsixteenMovesSevenHLR$ per 10 min).
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Model III: a reference price}
+  \small
+  Queues sit at $p_{\mathrm{ref}} \pm (i - \tfrac12)\delta$, $i = 1, 2, \ldots$. Between price moves they follow Model I.
+  \begin{itemize}
+    \item When a best queue empties, $p_{\mathrm{ref}}$ moves one tick away from it with probability $\theta$ (dimensionless). The queues shift: the emptied level becomes the new best queue on the other side, initially empty.
+    \item With probability $\theta_{\mathrm{reinit}}$ the whole book is then redrawn from its stationary law: a proxy for news that resets everyone's orders.
+  \end{itemize}
+  \vspace{0.3em}
+  \textbf{Mean reversion ratio} \citep{robert2011new}: with $N_c$ the number of continuations (two consecutive moves in the same direction) and $N_a$ the number of alternations,
+  \[ \eta = \frac{N_c}{2N_a}; \qquad \eta = \tfrac12 \text{ for independent moves}, \quad \eta < \tfrac12 \text{ for mean reversion.} \]
+  \textbf{Why the book alone mean-reverts.} Right after an up move the new bid queue is empty and the new ask queue is the old second level, often long. The imbalance points down, so the next move is likely down.
+  \vspace{0.3em}
+
+  \footnotesize Reduced version used here: two levels per side, unit events, moves triggered by depletions only. Assumptions and code in \texttt{queue\_reactive.simulate\_model3}.
+\end{frame}
+
+\begin{frame}{What the data show}
+  \small
+  \citet{huang2015simulating}, Euronext Paris, January 2010 to March 2012, two large-tick stocks (France Telecom, Alcatel-Lucent); France Telecom averages about 159,000 orders and 7,300 trades a day.
+  \begin{itemize}
+    \item \textbf{Limit orders at the best} arrive at a roughly constant rate in $q$, lower at $q = 0$. At the second level the rate \emph{decreases} with $q$: traders post there to gain priority while the queue is short.
+    \item \textbf{Cancellations at the best} rise concavely in $q$ up to about 25 AES and then flatten, unlike the linear rate of Poisson models. Priority is worth keeping.
+    \item \textbf{Market orders} decay exponentially with the best queue size: ``rushing for liquidity'' when it is scarce.
+    \item \textbf{Model III}, calibrated: $\theta = 0.7$, $\theta_{\mathrm{reinit}} = 0.85$. With $\theta_{\mathrm{reinit}} = 0$ the largest volatility the book can generate is about 5 bp (10 min), against 14 bp observed, and $\eta = 0.08$ against an empirical 0.39.
+    \item A Poisson model with linear cancellation overestimates execution probabilities of limit orders.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Discussion}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{The main lesson.} Endogenous book dynamics produce the right \emph{frequency} of price moves but too much mean reversion, hence too little volatility. Most low-frequency volatility comes from outside the book. Our reduced model reproduces the mechanism: $\eta$ rises from $\EsixteenEtaSevenZero$ to $\EsixteenEtaSevenOne$ as $\theta_{\mathrm{reinit}}$ goes from 0 to 1.
+
+      \vspace{0.4em}
+      \textbf{Limits.} Intensities depend on the current state only. Excitation by recent events is missing; \citet{wu2019queue} add Hawkes terms. Order sizes are fixed at the AES.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{itemize}
+        \item Fill probabilities: use the measured $\lambda^C(q)$, $\lambda^M(q)$, not linear rates; the Poisson model is too optimistic.
+        \item The second-level insertion pattern shows the value of priority (deck 8).
+        \item $\theta_{\mathrm{reinit}}$ is the share of moves not explained by the book: a direct measure of how much of the LP's inventory risk is news.
+      \end{itemize}
+      \textbf{Open question.} Estimating state-plus-history intensities with order sizes, and testing whether $\theta_{\mathrm{reinit}}$ is stable across days.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{queue\_reactive.py}. Experiments: \texttt{e3\_queue\_reactive.py}, \texttt{e16\_queue\_reactive\_price.py}.
+\begin{verbatim}
+from stochastic_lob import queue_reactive as qr
+first, second = qr.hlr_like_rates()
+w, q, kind, cens = qr.simulate_queue_events(first, 5e4, q0=5, rng=1)
+est = qr.estimate_intensities(w, q, kind, n_max=20, censored=cens)
+p = qr.Model3Params(first, second, theta=0.7, theta_reinit=0.85)
+times, signs, n = qr.simulate_model3(p, 1e5, rng=2)
+qr.mean_reversion_ratio(signs)
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}

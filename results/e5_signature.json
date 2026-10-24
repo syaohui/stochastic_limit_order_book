@@ -1,0 +1,7 @@
+{
+  "EfiveNrep": "10",
+  "EfiveT": "5{,}000",
+  "EfiveMaxZ": "3.1",
+  "EfiveCrossZeroLim": "3.333",
+  "EfiveCrossInfLim": "1.481"
+}

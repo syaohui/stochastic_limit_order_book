@@ -1,0 +1,45 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+.ipynb_checkpoints/
+
+# LaTeX build products (the shared deck is slides/stochastic-lob-slides.pdf)
+slides/*.aux
+slides/*.bbl
+slides/*.blg
+slides/*.log
+slides/*.out
+slides/*.nav
+slides/*.snm
+slides/*.toc
+slides/*.vrb
+slides/*.fdb_latexmk
+slides/*.fls
+slides/*.synctex.gz
+slides/main.pdf
+
+# local session notes
+.claude-progress.md
+
+# topic-deck build products (the shared decks are slides/decks/*.pdf)
+slides/topics/*.aux
+slides/topics/*.bbl
+slides/topics/*.blg
+slides/topics/*.log
+slides/topics/*.out
+slides/topics/*.nav
+slides/topics/*.snm
+slides/topics/*.toc
+slides/topics/*.vrb
+slides/topics/*.fdb_latexmk
+slides/topics/*.fls
+slides/topics/*.synctex.gz
+slides/topics/*.pdf
+slides/build.log
+
+# output of examples/lobster_pipeline.py
+lobster_report/

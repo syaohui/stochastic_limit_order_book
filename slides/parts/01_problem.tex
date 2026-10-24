@@ -1,0 +1,103 @@
+\section{The problem}
+
+\begin{frame}{The limit order book}
+  \begin{columns}[c]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \begin{tikzpicture}[x=0.55cm,y=0.32cm]
+        % bids (left of mid), asks (right of mid)
+        \foreach \i/\h in {1/6,2/4,3/7,4/3,5/5,6/2} {
+          \fill[accent!70] ({-\i+0.1},0) rectangle ({-\i+0.9},\h);
+        }
+        \foreach \i/\h in {1/3,2/5,3/4,4/6,5/2,6/4} {
+          \fill[warn!70] ({\i-0.9},0) rectangle ({\i-0.1},\h);
+        }
+        \draw[->] (-6.5,0) -- (6.7,0) node[right] {\scriptsize price};
+        \draw[dashed,gray] (0,0) -- (0,8.5);
+        \node[above] at (0,8.5) {\scriptsize mid $S$};
+        \node[below] at (-0.5,0) {\scriptsize $p_B$};
+        \node[below] at (0.5,0) {\scriptsize $p_A$};
+        \draw[decorate,decoration={brace,amplitude=3pt}] (-0.5,6.4) -- (0.5,6.4) node[midway,above=3pt] {\scriptsize spread};
+        \node[accent] at (-3.5,9.3) {\small bids (buy orders)};
+        \node[warn] at (3.5,9.3) {\small asks (sell orders)};
+        \draw[<-] (0.5,3.2) -- (2.2,7.5) node[above] {\scriptsize queue $q_a$};
+        \draw[<-] (-0.5,6.2) -- (-2.0,7.6);
+        \node at (-2.4,7.9) {\scriptsize queue $q_b$};
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \small
+      \begin{itemize}
+        \item Prices sit on a grid with tick size $\delta$ (currency).
+        \item \textbf{Limit order}: rests in a first-in, first-out (FIFO) queue at a price.
+        \item \textbf{Market order}: trades at once against the best opposite queue.
+        \item \textbf{Cancellation}: removes a resting order.
+        \item Best bid $p_B$, best ask $p_A$, mid $S = (p_A + p_B)/2$, spread $s = (p_A - p_B)/\delta$ ticks, best queue sizes $q_b, q_a$ (orders).
+      \end{itemize}
+      \vspace{0.3em}
+      The price is an \emph{output} of the queueing system that order flow drives.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{A liquidity provider's P\&L, exactly}
+  Let fill $j$ happen at time $t_j$ and price $p_j$, with $\varepsilon_j = +1$ if the LP sold and $-1$ if it bought. Inventory is $y_t = -\sum_{t_j < t}\varepsilon_j$ (shares). Starting flat, the marked-to-market P\&L $\Pi_T$ (currency) is
+  \[
+    \Pi_T \;=\; \underbrace{\sum_j \varepsilon_j\,(p_j - S_{t_j})}_{\text{spread captured}\;\ge 0}
+    \;+\; \underbrace{\int_0^T y_{t^-}\,\dd S_t}_{\text{inventory P\&L}} .
+  \]
+  This is an identity, not a model. Fill by fill, at a horizon $h$ (s) after the fill:
+  \[
+    \varepsilon_j\,(p_j - S_{t_j + h}) = \underbrace{\varepsilon_j\,(p_j - S_{t_j})}_{\text{half-spread}} - \underbrace{\varepsilon_j\,(S_{t_j+h} - S_{t_j})}_{\text{adverse selection}} .
+  \]
+  The left side is the \hl{markout} $M_j(h)$. LPs win the spread on every fill and lose it back when fills predict the next move. Every model in this deck is, for an LP, a model of one of these two terms.
+\end{frame}
+
+\begin{frame}{Five forces on a liquidity provider}
+  \small
+  \begin{tabular}{p{0.2\textwidth}p{0.42\textwidth}p{0.3\textwidth}}
+    \toprule
+    Force & What it does & Where in this deck \\
+    \midrule
+    Spread capture & Earns half the spread per passive fill & queue models, markouts \\
+    Adverse selection & Fills arrive just before the price moves against the LP & markouts, toxic flow, LVR \\
+    Inventory risk & Holding $y \ne 0$ exposes the LP to $\sigma$ & Avellaneda-Stoikov, GLFT \\
+    Queue priority & FIFO: the front of the queue fills first and is less toxic & queue position value \\
+    Latency & Stale quotes are picked off in races & Budish et al., Aquilina et al. \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.6em}
+
+  Fees and rebates shift these trade-offs but do not change their structure. They are left out of the models here.
+\end{frame}
+
+\begin{frame}{Facts the models must reproduce}
+  \begin{enumerate}
+    \small
+    \item \textbf{Order signs have long memory.} The sign autocorrelation decays as a power law, $C_\varepsilon(\ell) \sim \ell^{-\gamma_\varepsilon}$ with $0 < \gamma_\varepsilon < 1$, over thousands of trades \citep{lillo2004long}.
+    \item \textbf{Yet prices are close to unpredictable.} Impact must decay to offset the memory \citep{bouchaud2004fluctuations}.
+    \item \textbf{Impact is concave in size.} A metaorder of $Q$ shares moves the price by about $Y\sigma_D\sqrt{Q/V_D}$, with daily volatility $\sigma_D$, daily volume $V_D$ and $Y$ of order one \citep{toth2011anomalous,donier2015fully}.
+    \item \textbf{Order flow is close to critical.} Fitted Hawkes branching ratios are often near one \citep{hardiman2013critical}.
+    \item \textbf{Imbalance predicts the next move.} Order flow imbalance explains a large share of short-horizon price changes \citep{cont2014price}, and deep models find the same price formation mechanism across stocks \citep{sirignano2019universal}.
+    \item \textbf{Speed is worth money.} Latency races are frequent and a sizeable part of trading costs \citep{aquilina2022quantifying}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Notation used throughout}
+  \centering\footnotesize
+  \begin{tabular}{lll@{\hspace{1.2em}}lll}
+    \toprule
+    Symbol & Meaning & Unit & Symbol & Meaning & Unit \\
+    \midrule
+    $t$ & time & s & $\lambda$ & limit order rate & s$^{-1}$ \\
+    $\delta$ & tick size & currency & $\mu$ & market order rate & s$^{-1}$ \\
+    $S$ & mid price & currency & $\theta$ & cancel rate per order & s$^{-1}$ \\
+    $s$ & spread & ticks & $\sigma$ & volatility & cur.\ s$^{-1/2}$ \\
+    $q_b, q_a$ & best bid and ask queue & orders & $y$ & LP inventory & shares \\
+    $i$ & distance to other side & ticks & $M(h)$ & markout at horizon $h$ & ticks \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.8em}
+
+  \raggedright Order counts are numbers of unit-size orders; $\mu$ is per side; cur.\ is currency. Prices in ticks are dimensionless. Each slide defines its local symbols.
+\end{frame}

@@ -1,0 +1,196 @@
+\section{The model toolkit}
+
+\begin{frame}{Model families at a glance}
+  \footnotesize
+  \begin{tabular}{p{0.2\textwidth}p{0.22\textwidth}p{0.27\textwidth}p{0.22\textwidth}}
+    \toprule
+    Family & What drives the rates & Key result & Checked here \\
+    \midrule
+    Zero intelligence, CST & distance to opposite quote & depth and spread set by $\lambda/\theta$, $\mu/\lambda$ & depth $\to\lambda/\theta$ far out \\
+    Best queues (CdL) & constants & $p_\uparrow(q_b,q_a)$; $1/t$ duration tail; $\sigma^2 \propto \lambda\delta^2$ & MC and exact solve \\
+    Queue-reactive (HLR) & queue size & stationary law in product form & TV distance \EthreeTV \\
+    Hawkes & past events & $\bar\Lambda = (I-G)^{-1}\Lambda^0$; signature plot & MLE, KS, $C(h)$ \\
+    Propagator & past trade signs & diffusive only at $\zeta_c = (1-\gamma_\varepsilon)/2$ & slopes $\pm 0.01$ \\
+    Market making & control of quotes & AS and exact GLFT quotes & CE ranking \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.5em}
+
+  \small CST: \citet{cont2010stochastic}. CdL: \citet{cont2013price}. HLR: \citet{huang2015simulating}. GLFT: \citet{gueant2013dealing}. CE: certainty equivalent. MC: Monte Carlo. TV: total variation. MLE: maximum likelihood. KS: Kolmogorov-Smirnov test.
+\end{frame}
+
+% ---------------------------------------------------------------- zero intelligence / CST
+\begin{frame}{Zero intelligence and the Markovian book}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      State: signed queue sizes $X_p$ on a price grid. With $i$ the distance (ticks) to the \emph{opposite} best quote:
+      \begin{itemize}
+        \item limit orders at distance $i$: rate $\lambda(i)$
+        \item market orders: rate $\mu$ per side
+        \item each resting order cancels at rate $\theta(i)$
+      \end{itemize}
+      Zero intelligence \citep{smith2003statistical}: $\lambda,\theta$ constant. CST: $\lambda(i) = \lambda_1 i^{-a}$, with $\lambda_1$ (s$^{-1}$) the rate at distance one and $a$ a dimensionless exponent.
+
+      \vspace{0.4em}
+      \textbf{Dimensional analysis.} With prices in ticks and counts in orders, every stationary statistic depends only on
+      \[ \lambda/\theta \ \text{(depth)}, \quad \mu/\lambda \ \text{(price scale)}, \quad L \ \text{(window)}. \]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      Why it matters: \citet{farmer2005predictive} found that this model, with rates measured per stock, explains most of the cross-sectional variation in mean spread on the London Stock Exchange.
+
+      \vspace{0.4em}
+      What it misses: rates depend on the state and on history; order signs have no memory; no information.
+
+      \vspace{0.4em}
+      Simulated exactly by the Gillespie algorithm on a moving grid.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Markovian book: depth profile and spread}
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig1_markov_book.png}
+  \small
+  \begin{itemize}
+    \item Far from the quotes, depth $\bar Q(i)$ (orders) follows the M/M/$\infty$ value $\lambda(i)/\theta(i)$; near the quotes, market orders thin the book.
+    \item Mean spread: $\EoneCSTspread$ ticks (power law) against $\EoneZIspread$ ticks (zero intelligence, $\mu/\lambda$ six times larger). Standard errors from 20 batch means over $\EoneNevents$ events.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------- Cont-de Larrard
+\begin{frame}{Best queues: direction and timing of the next price move}
+  \small
+  Two best queues with one-tick spread; each grows at rate $\lambda$ and shrinks at rate $\nu$ (market orders plus cancellations, s$^{-1}$). The price moves up when the ask queue empties first \citep{cont2013price}.
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      First passage of a queue of size $q$ to zero, density (s$^{-1}$):
+      \[ f_q(t) = \frac{q}{t}\Big(\frac{\nu}{\lambda}\Big)^{q/2} I_q\big(2\sqrt{\lambda\nu}\,t\big)\,e^{-(\lambda+\nu)t}, \]
+      with $I_q$ the modified Bessel function. Then
+      \[ p_\uparrow(q_b,q_a) = \int_0^\infty f_{q_a}(t)\,P(\tau_{q_b} > t)\,\dd t . \]
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      Balanced case $\lambda = \nu$, large queues:
+      \[ p_\uparrow \approx \tfrac{2}{\pi}\arctan(q_b/q_a). \]
+      Time to the next move: $P(\tau > t) \sim q_b q_a/(\pi\lambda t)$, so the \hl{mean duration is infinite}.
+
+      Price diffusion, with $M_F$ the mean product of regenerated queue sizes (orders$^2$):
+      \[ \sigma^2 = \pi\lambda\delta^2/M_F \quad (\text{time scale } t\,n\log n). \]
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Best queues: closed forms against simulation}
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig2_best_queues.png}
+  \small
+  \begin{itemize}
+    \item Monte Carlo ($\EtwoNmc$ paths per point) matches the closed form within $\EtwoMaxDev$ standard errors; an exact sparse linear solve agrees to $2\times10^{-3}$.
+    \item The arctangent law is off by $\EtwoArctanErrSmall$ at $(2,5)$ and $\EtwoArctanErr$ at $(40,20)$. Imbalance alone is a strong predictor, which is why micro-prices work \citep{stoikov2018micro}.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------- queue reactive
+\begin{frame}{Queue-reactive models}
+  \small
+  \citet{huang2015simulating} estimate every rate as a function of the queue size $q$ (in average event sizes): $q\to q+1$ at $\lambda^L(q)$, $q\to q-1$ at $\lambda^C(q)+\lambda^M(q)$. Model I (independent queues) has the product-form stationary law
+  \[ \pi(q) = \pi(0)\prod_{j=1}^{q}\lambda^L(j-1)\big/\big[\lambda^C(j)+\lambda^M(j)\big]. \]
+  \centering
+  \includegraphics[width=0.58\textwidth]{fig3_queue_reactive.png}
+
+  \raggedright\footnotesize
+  Illustrative rates (a); product formula against one simulated queue of $\EthreeNevents$ events (b): total variation distance $\EthreeTV$. Models II and III couple the best queues and move a reference price; \citet{wu2019queue} add Hawkes terms.
+\end{frame}
+
+% ---------------------------------------------------------------- Hawkes
+\begin{frame}{Hawkes processes: order flow excites itself}
+  \small
+  For event types $u, v$ (buy, sell, cancel, \ldots) the intensity (s$^{-1}$) is
+  \[ \Lambda_u(t) = \Lambda^0_u + \sum_v \sum_{t^v_j < t} \alpha_{uv}\,e^{-\beta_{uv}(t - t^v_j)}, \]
+  with baseline $\Lambda^0_u$, jump $\alpha_{uv}$ and decay $\beta_{uv}$, all in s$^{-1}$. The branching matrix $G_{uv} = \alpha_{uv}/\beta_{uv}$ counts direct offspring; stationarity needs spectral radius $\rho(G) < 1$, and then $\bar\Lambda = (I - G)^{-1}\Lambda^0$.
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Fitted order flow is often \hl{near critical}, $\rho(G)\approx 1$ \citep{hardiman2013critical}, and the kernels decay slowly, so they must be estimated from about 10 $\mu$s to 100 s \citep{bacry2016estimation}.
+        \item Exact likelihood in one pass for exponential kernels; residuals $\mathcal{A}_u(t_j) - \mathcal{A}_u(t_{j-1})$ of the compensator $\mathcal{A}_u$ are i.i.d.\ unit exponential under the true model.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{itemize}
+        \item Nearly unstable Hawkes processes have diffusive scaling limits \citep{jaisson2015limit}; with heavy-tailed kernels the limits are \hl{rough}, which gives rough volatility with leverage from microstructure \citep{eleuch2018microstructural,wang2026rough}.
+        \item Estimation pitfalls (seasonality, regime shifts, one-scale kernels): deep dive 4.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Hawkes: fitting buy and sell market orders}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig4_hawkes.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Bivariate exponential Hawkes model of buys and sells, $T_{\mathrm{obs}} = \EfourT$ s of data: $\EfourNbuy$ buys and $\EfourNsell$ sells, true spectral radius $\rho(G) = \EfourRho$. (a) Intensities over one minute; ticks mark events.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item MLE recovers all ten parameters within $\EfourMaxZ$ standard errors (observed information).
+        \item (b) Rescaled waiting times are unit exponential: Kolmogorov-Smirnov $p = \EfourKSbuy$ and $\EfourKSsell$.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Hawkes price model: microstructure noise}
+  \begin{columns}[c]
+    \begin{column}{0.48\textwidth}
+      \small
+      Up ticks $N_+$ and down ticks $N_-$ form a symmetric Hawkes process: self jump $\alpha_s$, cross jump $\alpha_c$, decay $\beta$ \citep{bacry2013modelling}. With $g = (\alpha_s - \alpha_c)/\beta$ and $\eta = \beta(1-g)$ (s$^{-1}$), the variance per unit time at sampling interval $h$ (s) is
+      \[ C(h) = 2\bar\Lambda\Big[\tfrac{1}{(1-g)^2} + \Big(1 - \tfrac{1}{(1-g)^2}\Big)\tfrac{1 - e^{-\eta h}}{\eta h}\Big] \]
+      in ticks$^2$ s$^{-1}$. Cross-excitation ($g<0$) gives the falling signature plot of tick data: bid-ask bounce. Derivation in the backup slides.
+
+      \vspace{0.3em}
+      Simulation matches within $\EfiveMaxZ$ standard errors over 42 points ($\EfiveNrep$ replicates each).
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.95\textwidth]{fig5_signature.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- propagator / impact
+\begin{frame}{The propagator model: memory and efficiency}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      Trade time $n$, sign $\varepsilon_n=\pm1$, price in ticks \citep{bouchaud2004fluctuations}:
+      \[ P_n = \textstyle\sum_{m<n} \Gamma_0\,(n-m)^{-\zeta}\,\varepsilon_m , \]
+      with impact amplitude $\Gamma_0$ (ticks) and decay exponent $\zeta$.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      If $C_\varepsilon(\ell)\sim\ell^{-\gamma_\varepsilon}$, then $\mathcal{D}(\ell) = \Var(P_{n+\ell}-P_n)/\ell \sim \ell^{1-\gamma_\varepsilon-2\zeta}$, so prices diffuse only at $\zeta_c = (1-\gamma_\varepsilon)/2$: impact decay offsets sign memory.
+    \end{column}
+  \end{columns}
+  \centering
+  \includegraphics[width=0.6\textwidth]{fig6_propagator.png}
+
+  \raggedright\footnotesize
+  Signs: sign of fractional Gaussian noise, $\gamma_\varepsilon = \EsixGamma$, $2^{20}$ trades, $\EsixNrep$ replicates. Fitted slopes $\EsixSlopeLow$, $\EsixSlopeCrit$, $\EsixSlopeHigh$ against theory $\EsixTheoryLow$, $\EsixTheoryCrit$, $\EsixTheoryHigh$.
+\end{frame}
+
+\begin{frame}{Large orders: the square-root law and the latent book}
+  \small
+  A metaorder of $Q$ shares, executed over hours, moves the price by
+  \[ I(Q) \approx Y\,\sigma_D\,\sqrt{Q/V_D}, \]
+  with daily volatility $\sigma_D$ (fraction of price), daily volume $V_D$ (shares) and a dimensionless $Y$ of order one \citep{toth2011anomalous}.
+  \begin{itemize}
+    \item The visible book cannot explain it: it holds a small fraction of daily volume. \citet{donier2015fully} model a \hl{latent} order book whose density is linear near the price. This gives the square root, contains the propagator model, and allows no price manipulation.
+    \item For an LP the message is that impact has two parts: a transient mechanical part that reverts, and a permanent informational part. Markouts at long horizons measure the second.
+  \end{itemize}
+  \vspace{0.3em}
+  The square-root law is an empirical result; this repository does not test it.
+\end{frame}

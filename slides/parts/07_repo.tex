@@ -1,0 +1,78 @@
+\section{The repository}
+
+\begin{frame}{Deep dives: one deck per topic}
+  \small
+  Each deck goes from the question to the model, its statistics, figures from this code, published evidence, and a discussion for liquidity providers. PDFs in \texttt{slides/decks/}.
+  \vspace{0.2em}
+
+  \scriptsize
+  \begin{tabular}{rp{0.3\textwidth}p{0.55\textwidth}}
+    \toprule
+    & Deck & New in the deck \\
+    \midrule
+    1 & The Markovian order book & rate estimation from LOBSTER files; the depth-truncation bias in cancellation rates \\
+    2 & The best queues & constant-rate formulas fitted to a state-dependent book; clustered errors for conditional frequencies \\
+    3 & Queue-reactive models & nonparametric intensity estimation; a reduced Model III: mean reversion and news \\
+    4 & Self-exciting order flow & three ways an exponential fit misreads the branching ratio \\
+    5 & Price impact & propagator estimation and truncation bias; latent book: exact linear-to-square-root crossover \\
+    6 & Order flow imbalance and the micro-price & micro-price estimation and out-of-sample tests \\
+    7 & Optimal market making & fill-curve estimation with censoring; cost of a wrong fill curve \\
+    8 & Adverse selection and queue priority & Glosten-Milgrom simulated; markouts; queue value \\
+    9 & Liquidity in AMMs & LVR derivation, concentrated liquidity, fees and blocks \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Everything here is reproducible}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      \textbf{Package} \texttt{stochastic\_lob}, NumPy and SciPy only:
+      \begin{itemize}
+        \item \texttt{markov\_lob}, \texttt{best\_queues}, \texttt{queue\_reactive}
+        \item \texttt{hawkes}, \texttt{impact}, \texttt{latent\_book}, \texttt{microprice}
+        \item \texttt{market\_making}, \texttt{adverse\_selection}, \texttt{queue\_position}, \texttt{markouts}, \texttt{amm}
+        \item \texttt{lobster}: read and write LOBSTER order book files
+      \end{itemize}
+      \textbf{Tests} (46): each closed form or estimator against an independent computation (Monte Carlo, exact linear solve, PDE, or a known limit).
+
+      \textbf{Experiments} (23): one script per figure; numbers go to \texttt{results/} as \LaTeX{} macros, and the slides read them.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+\begin{verbatim}
+pip install -e .
+python -m pytest tests
+python experiments/run_all.py
+python build_slides.py
+\end{verbatim}
+      \small
+      Fixed random seeds; about 15 minutes on a laptop for all experiments.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Verification summary}
+  \footnotesize
+  \begin{tabular}{p{0.38\textwidth}p{0.3\textwidth}p{0.22\textwidth}}
+    \toprule
+    Result & Check & Agreement \\
+    \midrule
+    CdL $p_\uparrow$ closed form & Monte Carlo; sparse solve & $\le\EtwoMaxDev$ s.e.; $2\times10^{-3}$ \\
+    CdL duration tail $q_bq_a/(\pi\lambda t)$ & exact survival at $10^4$ s & within $\EtwoTailErr\%$ \\
+    Queue-reactive stationary law & long simulation & TV $\EthreeTV$ \\
+    Hawkes MLE, 10 parameters & known truth & $|z|\le\EfourMaxZ$ \\
+    Hawkes signature plot & 10 replicates, 42 points & $\le\EfiveMaxZ$ s.e. \\
+    Propagator, critical $\zeta_c$ & fitted log-log slope & $\EsixSlopeCrit$ vs 0 \\
+    Queue value (absorbing chain) & Monte Carlo; truncation & within 4 s.e.; $10^{-3}$ \\
+    Exact GLFT & ODE residual; closed form at small $y$ & $<10^{-6}$; $\EelevenMaxApproxErr$ ticks \\
+    CPMM LVR $V_0(1-e^{-\sigma^2T/8})$ & Monte Carlo & within 4 s.e. \\
+    Concentrated LVR $\sigma^2/(8(1-w^{-1/2}))$ & Monte Carlo & within 2\% \\
+    Latent book: linear-to-square-root $F(u)$ & finite-difference PDE & within $\EnineteenMaxErr\%$ \\
+    Book rate MLE $\hat\lambda(i)$, $\hat\theta(i)$ & known truth & $|z|\le\EfifteenMaxZlam$ \\
+    State-dependent $p_\uparrow$ & simulated book, clustered s.e. & $|z|\le\EtwentythreeMaxZExact$ \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.4em}
+
+  s.e.: standard error. TV: total variation distance. $z$: (estimate $-$ truth)/s.e.
+\end{frame}

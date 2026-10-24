@@ -1,0 +1,68 @@
+\section{Backup: derivations and model details}
+
+\begin{frame}{Backup: the P\&L identity}
+  \small
+  Cash after fills: $x_T = \sum_j \varepsilon_j p_j$ (sell: receive $p_j$). Inventory: $y_T = -\sum_j\varepsilon_j$. Then
+  \begin{align*}
+    \Pi_T = x_T + y_T S_T &= \sum_j \varepsilon_j (p_j - S_{t_j}) - \sum_j \varepsilon_j (S_T - S_{t_j}) .
+  \end{align*}
+  Since $y_{t^-} = -\sum_{t_j < t}\varepsilon_j$, the last sum equals $\int_0^T y_{t^-}\,\dd S_t$. No model enters. Taking expectations, the inventory term is negative exactly when fills are followed by moves against the new position, which is adverse selection; its variance is inventory risk.
+\end{frame}
+
+\begin{frame}{Backup: arctangent law and duration tail}
+  \small
+  \textbf{Arctangent.} For $\lambda = \nu$ each queue is a symmetric walk with variance rate $2\lambda$ (orders$^2$ s$^{-1}$). For large queues $(q_b, q_a)$ is a planar Brownian motion with independent, equal-variance coordinates, stopped on the axes. The probability $h$ of exiting through $\{q_a = 0\}$ is harmonic with $h=1$ there and $h = 0$ on $\{q_b = 0\}$. In polar angle $\chi = \arctan(q_a/q_b)$, $h = 1 - 2\chi/\pi$ works, so $p_\uparrow \approx (2/\pi)\arctan(q_b/q_a)$. It fails if $\lambda\ne\nu$ (drift).
+
+  \vspace{0.5em}
+  \textbf{Tail.} By the reflection principle, $P(\tau_q > t)\approx P(|Z| < q/\sqrt{2\lambda t}) \approx q/\sqrt{\pi\lambda t}$ for a standard normal $Z$. Independence gives $P(\tau>t)\approx q_bq_a/(\pi\lambda t)$. With a $1/t$ tail the truncated mean grows like $\log t$, the number of price changes by time $t$ grows like $t/\log t$, and the $n\log n$ time scale of the diffusion limit follows. The renewal step is heuristic; \citet{cont2013price} prove it.
+\end{frame}
+
+\begin{frame}{Backup: signature plot of the Hawkes price}
+  \small
+  For a stationary linear Hawkes process the spectral density matrix of $\dd N$ at angular frequency $\omega_f$ is $\frac{1}{2\pi}[I - \hat\Phi]^{-1}\mathrm{diag}(\bar\Lambda)[I - \hat\Phi]^{-*}$ \citep{hawkes1971spectra}. The price $\mathbf{w}^\top N$ with $\mathbf{w} = (1,-1)^\top$ uses the eigenvalue $\hat\psi = (\alpha_s - \alpha_c)/(\beta + \mathrm{i}\,\omega_f)$, so the increments have density
+  \[ \frac{2\bar\Lambda}{2\pi}\Big[1 + \frac{\beta^2 - \eta^2}{\eta^2 + \omega_f^2}\Big], \qquad \eta = \beta - \alpha_s + \alpha_c . \]
+  In time: covariance density $2\bar\Lambda[\delta_D(t) + \frac{\beta^2-\eta^2}{2\eta}e^{-\eta|t|}]$, with $\delta_D$ the Dirac delta. Integrating over $[0,h]^2$ and dividing by $h$ gives $C(h)$. Checks: $C(0^+) = 2\bar\Lambda$; no excitation gives the Poisson value $2\Lambda^0$; simulation agrees (slide on signature plot).
+\end{frame}
+
+\begin{frame}{Backup: exact market making with inventory limits}
+  \small
+  Mid $\dd S = m\,\dd t + \sigma\,\dd W$, fills at rate $A e^{-kd}$ for a quote at distance $d$, utility $-\exp(-\gamma(x_T + y_TS_T))$, inventory $|y|\le Q$ \citep{gueant2013dealing}. The ansatz
+  \[ u(t,x,y,S) = -\exp\big(-\gamma(x + yS)\big)\,v_y(t)^{-\gamma/k} \]
+  turns the HJB equation into the linear system $\dot v(t) = M v(t)$, $v(T) = \mathbf{1}$, with $M$ tridiagonal:
+  \[ M_{yy} = \tfrac{k}{2}\gamma\sigma^2 y^2 - k m\,y, \qquad M_{y,y\pm1} = -A\big(1+\tfrac{\gamma}{k}\big)^{-(1+k/\gamma)} . \]
+  So $v(t) = e^{-M(T-t)}\mathbf{1}$ and
+  \[ d^b(t,y) = \tfrac1k\ln\tfrac{v_y(t)}{v_{y+1}(t)} + \tfrac1\gamma\ln\big(1+\tfrac\gamma k\big), \qquad d^a(t,y) = \tfrac1k\ln\tfrac{v_y(t)}{v_{y-1}(t)} + \tfrac1\gamma\ln\big(1+\tfrac\gamma k\big). \]
+  Long horizons: $v$ aligns with the ground state of $M$. Implemented by diagonalizing $M$ (it is symmetric). Checks: terminal quotes, ODE residual below $10^{-6}$, small-$y$ agreement with the closed form.
+\end{frame}
+
+\begin{frame}{Backup: LVR of concentrated liquidity}
+  \small
+  For holdings $x(P)$ of the risky asset, the LVR rate is $\frac{\sigma^2P^2}{2}|x'(P)|$ \citep{milionis2022automated}, with $\sigma$ the volatility per $\sqrt{\text{day}}$.
+  \begin{itemize}
+    \item CPMM, $x = L/\sqrt P$: rate $\frac{\sigma^2}{4}L\sqrt P = \frac{\sigma^2}{8}V$, with value $V = 2L\sqrt P$. Since $\E\sqrt{P_T} = \sqrt{P_0}e^{-\sigma^2T/8}$, $\E[\mathrm{LVR}_T] = V_0(1 - e^{-\sigma^2T/8})$ exactly.
+    \item Range $[P/w, Pw]$ centred on the price, $x = L(P^{-1/2} - P_b^{-1/2})$: same rate $\frac{\sigma^2}{4}L\sqrt P$, but $V = 2L\sqrt P(1 - w^{-1/2})$. Hence
+    \[ \frac{\mathrm{LVR}}{V} = \frac{\sigma^2}{8\,(1 - w^{-1/2})} \quad \text{per unit time, while the price is in range.} \]
+  \end{itemize}
+  The second formula is derived here from the first; simulation agrees within 2\% (test suite).
+\end{frame}
+
+\begin{frame}{Backup: queue position model}
+  \small
+  One unit sell order at the best ask; $a$ orders ahead, $b$ behind, $c$ at the best bid; one-tick spread.
+  \vspace{0.3em}
+
+  \begin{tabular}{ll}
+    \toprule
+    Event & Rate (s$^{-1}$) \\
+    \midrule
+    market buy (front of ask queue; fills us if $a = 0$) & $\mu$ \\
+    limit sell joins behind us & $\lambda$ \\
+    cancellation ahead / behind & $\theta a$ / $\theta b$ \\
+    limit buy joins bid / bid depletes by one & $\lambda$ / $\mu + \theta c$ \\
+    informed sweep up (fills everyone, fair value $+J$) / down (price moves away) & $\nu$ / $\nu$ \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+
+  Payoff per fill, in ticks against the mid after the next price change: $\tfrac12 - \mathrm{AS}$ with $\mathrm{AS} = 1$ if the fill empties the queue, $2P_\uparrow(c,b) - 1$ otherwise, and $J$ for a sweep. Solved exactly as an absorbing Markov chain; truncation and Monte Carlo checks in the tests.
+\end{frame}

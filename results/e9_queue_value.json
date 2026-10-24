@@ -1,0 +1,12 @@
+{
+  "EnineQtot": "16",
+  "EnineCzero": "10",
+  "EnineNu": "0.03",
+  "EnineFrontPerFill": "0.65",
+  "EnineBackPerFill": "-0.33",
+  "EnineFrontFill": "0.97",
+  "EnineBackFill": "0.66",
+  "EnineBreakEven": "10",
+  "EnineZIFront": "0.72",
+  "EnineZIBack": "0.67"
+}

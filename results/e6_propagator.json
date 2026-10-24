@@ -1,0 +1,15 @@
+{
+  "EsixGamma": "0.50",
+  "EsixNrep": "8",
+  "EsixZetaC": "0.25",
+  "EsixRespOne": "0.906 \\pm 0.000",
+  "EsixRespTen": "0.938 \\pm 0.001",
+  "EsixRespHundred": "0.889 \\pm 0.008",
+  "EsixRespThousand": "0.910 \\pm 0.067",
+  "EsixSlopeLow": "0.284 \\pm 0.010",
+  "EsixTheoryLow": "0.30",
+  "EsixSlopeCrit": "-0.007 \\pm 0.008",
+  "EsixTheoryCrit": "0.00",
+  "EsixSlopeHigh": "-0.286 \\pm 0.006",
+  "EsixTheoryHigh": "-0.30"
+}

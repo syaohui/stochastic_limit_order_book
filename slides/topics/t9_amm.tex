@@ -1,0 +1,144 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\newcommand{\reporoot}{../..}
+\input{../preamble}
+
+\title{Liquidity in Automated Market Makers}
+\subtitle{Loss-versus-rebalancing: the LP's adverse selection without a book}
+\decknumber{9}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{The question}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      An automated market maker (AMM) has no queue and no quotes: liquidity sits on a curve, and anyone can trade against it. \hl{What does it cost to provide that liquidity, and how do fees, block time and concentration change the bill?}
+      \begin{itemize}
+        \item The pool's price lags the exchange price; arbitrageurs close the gap at the LP's expense.
+        \item This is the same economics as stale quotes in a book (deck 8), with a closed form.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{alertblock}{In this deck}
+        \small
+        \begin{enumerate}
+          \item Constant-product pools.
+          \item Loss-versus-rebalancing (LVR): derivation and exact mean.
+          \item Concentrated liquidity (derived here).
+          \item Fees and discrete blocks.
+        \end{enumerate}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Constant-product pools}
+  \small
+  A pool holds $x$ units of a risky asset and $y$ units of the numeraire with $xy = L^2$; $L$ is the liquidity. Its marginal price is $P = y/x$, so
+  \[ x(P) = L/\sqrt P, \qquad y(P) = L\sqrt P, \qquad V(P) = xP + y = 2L\sqrt P . \]
+  The exchange price follows a geometric Brownian motion $\dd P = \sigma P\,\dd W$ with volatility $\sigma$ (time$^{-1/2}$). Arbitrageurs trade the pool to $P$ whenever it pays.
+  \vspace{0.3em}
+  \begin{itemize}
+    \item The LP holds more of the asset after it falls and less after it rises: it is short volatility.
+    \item ``Impermanent loss'' compares with buy-and-hold and mixes in market moves. LVR compares with a portfolio that holds the \emph{same} $x(P_t)$ at all times, so it isolates the cost of trading at stale prices \citep{milionis2022automated}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Loss-versus-rebalancing}
+  \small
+  Rebalancing portfolio: holds $x(P_t)$ and trades at $P_t$, so $\dd R = x(P)\,\dd P$. The pool's value $V(P)$ satisfies $V'(P) = x(P)$ for any constant-function pool, because $y'(P) = -P\,x'(P)$. By Itô's formula
+  \[ \dd V - \dd R = \tfrac12 V''(P)\,\sigma^2P^2\,\dd t = \tfrac12 x'(P)\,\sigma^2P^2\,\dd t \le 0 . \]
+  So the LP loses at the rate
+  \[ \frac{\dd\,\mathrm{LVR}}{\dd t} = \frac{\sigma^2P^2}{2}\,|x'(P)| = \frac{\sigma^2}{8}\,V \quad\text{(constant product).} \]
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Exact mean.} $V$ is proportional to $\sqrt P$, and $\E\sqrt{P_T} = \sqrt{P_0}\,e^{-\sigma^2T/8}$, so
+      \[ \E[\mathrm{LVR}_T] = V_0\big(1 - e^{-\sigma^2T/8}\big). \]
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Units.} $\sigma^2$ is per unit time, so $\sigma^2V/8$ is value per unit time and $\sigma^2T$ is dimensionless. Small $T$: $\E[\mathrm{LVR}_T] \approx \sigma^2V_0T/8$.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Concentrated liquidity}
+  \small
+  On a range $[P_a, P_b]$, $x(P) = L(P^{-1/2} - P_b^{-1/2})$ and $y(P) = L(P^{1/2} - P_a^{1/2})$ while $P$ is inside. Then $x'(P) = -\tfrac12 LP^{-3/2}$, the same as for the full curve, so
+  \[ \frac{\dd\,\mathrm{LVR}}{\dd t} = \frac{\sigma^2}{4}\,L\sqrt P , \qquad\text{while}\qquad V = 2L\sqrt P - LP\,P_b^{-1/2} - L P_a^{1/2}. \]
+  For a range $[P/w, Pw]$ centred in log price on the current $P$, with $w > 1$, $V = 2L\sqrt P(1 - w^{-1/2})$ and
+  \[ \boxed{\;\frac{\mathrm{LVR}}{V} = \frac{\sigma^2}{8\,(1 - w^{-1/2})}\;} \quad\text{per unit time, while } P \text{ is in range.} \]
+  \begin{itemize}
+    \item $w \to \infty$ recovers $\sigma^2/8$. A narrow range multiplies the cost per unit of capital by $1/(1 - w^{-1/2})$; it also multiplies fee income per unit of capital, which is why ranges are narrow.
+    \item Derived here from the LVR rate of \citet{milionis2022automated}; checked by simulation to 2\%.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fees and block time}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      With a proportional fee $f$, arbitrage pays only when the pool price is more than about $f$ away from $P$: a \hl{no-trade band}. With arbitrage only at block times $\Delta t$ apart, the price can jump through the band between blocks.
+      \begin{itemize}
+        \item Arbitrage profit falls below LVR; part of LVR comes back to the LP as fees \citep{milionis2023fees}.
+        \item The split depends on how far the price moves in one block relative to the fee, $\sigma\sqrt{\Delta t}$ against $f$.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Simulation here.} The exchange price moves as a geometric Brownian motion; at each block the arbitrageur trades the pool to the edge of the band if it is outside, paying fee $f$ on the input. Arbitrage profit and fees are recorded per path and divided by the no-fee LVR.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{LVR: fees, block time and concentration}
+  \centering
+  \includegraphics[width=0.86\textwidth]{fig13_lvr.png}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      (a) $\sigma = \EthirteenSigma$ day$^{-1/2}$, about 76\% a year: LVR costs $\EthirteenAnnualLVR$\% of capital per year; the 30-day simulation gives $\EthirteenSimThirty$\% against the exact $\EthirteenExactThirty$\%.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      (b) At 5 bp and 12 s blocks, arbitrage keeps $\EthirteenArbFiveTwelve$ and fees return $\EthirteenFeeFiveTwelve$ of no-fee LVR; at 30 bp, $\EthirteenArbThirtyTwelve$ and $\EthirteenFeeThirtyTwelve$. (c) A $w = 1.1$ range pays $\EthirteenAmpTen\times$ the full-range LVR per unit capital.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Discussion and takeaways}
+  \small
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Book LP and AMM LP, side by side}
+      \begin{itemize}
+        \item Book: stale quotes picked off in latency races; cost about a third of the effective spread on the LSE \citep{aquilina2022quantifying}.
+        \item AMM: stale pool price arbitraged every block; cost $\sigma^2/8$ of capital per unit time.
+        \item Both are adverse selection from public information, not from private information.
+      \end{itemize}
+      \textbf{Assumptions.} Geometric Brownian motion, no gas cost, a single competitive arbitrageur, no noise traders in the simulation.
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{For a liquidity provider}
+      \begin{enumerate}
+        \item Price the position by LVR, not by impermanent loss.
+        \item Fees must exceed the arbitrage share of LVR; faster blocks help the LP.
+        \item Concentration scales cost and income together; it pays only if fee income per unit of capital scales at least as fast.
+      \end{enumerate}
+      \textbf{Open question.} Which design, book or AMM, fee level and block time, minimizes the total cost of liquidity for a given asset.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Reproduce}
+  \small
+  Code: \texttt{amm.py}. Experiment: \texttt{e13\_lvr.py}.
+\begin{verbatim}
+from stochastic_lob import amm
+amm.expected_lvr_cpmm(T=365, sigma=0.04)              # value; V_0 = 2 here
+amm.lvr_per_capital_concentrated(sigma=0.04, w=1.1)    # per day, in range
+\end{verbatim}
+\end{frame}
+
+\deckreferences
+\end{document}
