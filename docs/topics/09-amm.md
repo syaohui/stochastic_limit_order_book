@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/09-amm-liquidity.pdf`](../../slides/decks/09-amm-liquidity.pdf) · Code: [`amm.py`](../../src/stochastic_lob/amm.py) · Experiment: `e13_lvr.py`
 
+![AMM](../../figures/gallery/g09_amm.png)
+
+*Loss-versus-rebalancing of a constant-product pool on 150 of 400 simulated price paths (volatility $\sigma$ = 4% per square-root day) with its exact mean, and LVR per unit capital of a concentrated position over volatility and range width (log scale).*
+
 ## The question
 
 An automated market maker (AMM) has no queue and no quotes. What does it cost to provide liquidity on a curve, and how do fees, block time and concentration change the bill?

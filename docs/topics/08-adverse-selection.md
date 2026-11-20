@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/08-adverse-selection-queue-priority.pdf`](../../slides/decks/08-adverse-selection-queue-priority.pdf) · Code: [`adverse_selection.py`](../../src/stochastic_lob/adverse_selection.py), [`markouts.py`](../../src/stochastic_lob/markouts.py), [`queue_position.py`](../../src/stochastic_lob/queue_position.py) · Experiments: `e9_queue_value.py`, `e10_markouts.py`, `e22_glosten_milgrom.py`
 
+![Glosten-Milgrom](../../figures/gallery/g08_adverse_selection.png)
+
+*Glosten-Milgrom with 30% informed traders: the market maker's estimate $E[V]$ of the value on 200 paths (red when the true value is high) and the mean spread, which falls from 0.30 to 0.008 of $V_H - V_L$ in 60 trades; and the zero-profit spread over the belief $\pi$ and the informed share $\alpha$.*
+
 ## The question
 
 A passive fill earns half the spread, and it also says that someone wanted to trade with you now. How much of the spread goes back to the price move that follows, and what decides it: information, queue mechanics, or speed?

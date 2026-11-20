@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/06-order-flow-imbalance-microprice.pdf`](../../slides/decks/06-order-flow-imbalance-microprice.pdf) · Code: [`impact.py`](../../src/stochastic_lob/impact.py) (OFI), [`microprice.py`](../../src/stochastic_lob/microprice.py) · Experiments: `e8_ofi.py`, `e14_mlofi.py`, `e20_microprice.py`
 
+![Order flow](../../figures/gallery/g06_order_flow.png)
+
+*Mid, weighted mid and micro-price over 15 s of a simulated book, and the law of the mid change over the next 2 s by queue imbalance $I = q_b/(q_b + q_a)$, with $q_b$ and $q_a$ the best bid and ask queues (orders), at a one-tick spread: a rise has probability 5% when $I < 0.2$ and 31% when $I > 0.8$.*
+
 ## The question
 
 Over seconds, prices move because best queues are added to and eaten. Which summary of order flow explains the move (contemporaneous), and which summary of the book predicts the next one (predictive)? An LP quotes around a fair value; quoting around the mid when the fair value is elsewhere hands edge to the next trader.

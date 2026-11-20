@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/04-hawkes-order-flow.pdf`](../../slides/decks/04-hawkes-order-flow.pdf) · Code: [`hawkes.py`](../../src/stochastic_lob/hawkes.py) · Experiments: `e4_hawkes.py`, `e5_signature.py`, `e17_hawkes_pitfalls.py`
 
+![Hawkes cascade](../../figures/gallery/g04_hawkes.png)
+
+*One Hawkes path in its cluster form (baseline rate $\mu$ = 0.15/s, branching ratio $n$ = 0.85, kernel $n\beta e^{-\beta t}$ with $\beta$ = 0.8/s). Each immigrant (generation 0) starts a family; colours mark the largest families. Below: the intensity $\lambda_t$ (1/s).* Animated: [`a3_hawkes_cascade.gif`](../../figures/animations/a3_hawkes_cascade.gif).
+
 ## The question
 
 How much of market activity is triggered by market activity? The branching ratio of a Hawkes process measures it. Near-critical excitation also links millisecond order flow to rough volatility over hours.

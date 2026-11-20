@@ -90,4 +90,4 @@ OFI: `ofi_contributions`, `aggregate_ofi`, `multilevel_ofi_contributions`, `aggr
 ## Data and figures
 
 - `lobster`: `read(message, orderbook)`, `to_record(d, tick, lot, K)`, `write(rec, folder)`, `event_codes`. See [data.md](data.md).
-- `plotting`: `use_style()` (journal style: inward ticks on four sides, print-size type), `panel_label`, `save(fig, stem, outdir)` (PNG, 300 dpi).
+- `plotting`: `use_style()` (journal style: inward ticks on four sides, print-size type), `panel_label`, `style_3d(ax, elev, azim)` (light panes and print-size ticks for 3D axes), `save(fig, stem, outdir)` (PNG, 300 dpi).

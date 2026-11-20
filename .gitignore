@@ -24,6 +24,7 @@ slides/main.pdf
 
 # local session notes
 .claude-progress.md
+.claude-progress.compacted
 
 # topic-deck build products (the shared decks are slides/decks/*.pdf)
 slides/topics/*.aux
@@ -40,6 +41,9 @@ slides/topics/*.fls
 slides/topics/*.synctex.gz
 slides/topics/*.pdf
 slides/build.log
+
+# cached simulation output of experiments/gallery.py (regenerated in seconds)
+results/raw/
 
 # output of examples/lobster_pipeline.py
 lobster_report/

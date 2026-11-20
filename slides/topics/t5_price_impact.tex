@@ -35,6 +35,13 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Impact is a mean; the latent book behind it}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g05_price_impact.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) 200 runs of the propagator model (impact $G(\ell) = \Gamma_0 \ell^{-1/4}$ of a trade $\ell$ trades later, with scale $\Gamma_0$; trade-sign correlation decaying as $\ell^{-1/2}$) with a buy metaorder that makes 30\% of trades for 1,000 trades. At its end the mean impact is $\GalFivePeakMC\,\Gamma_0$ against \GalFivePeakTh{} from the formula; single runs scatter by \GalFiveNoise. (b) The latent book $|\phi|$ (shares/tick) at seven times during and after a buy metaorder (rate $m$ = 20 shares/s for 1 s; book slope $L$ = 1 share/tick$^2$, diffusion $D$ = 1 tick$^2$/s); the price (black) follows the closed form within \GalFiveErr\%.
+\end{frame}
+
 \begin{frame}{Two facts that must coexist}
   \small
   \begin{columns}[T]

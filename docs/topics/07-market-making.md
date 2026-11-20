@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/07-optimal-market-making.pdf`](../../slides/decks/07-optimal-market-making.pdf) · Code: [`market_making.py`](../../src/stochastic_lob/market_making.py) · Experiments: `e7_market_making.py`, `e11_glft_exact.py`, `e12_signal.py`, `e21_fill_estimation.py`
 
+![Market making](../../figures/gallery/g07_market_making.png)
+
+*Inventory paths of a market maker with the exact GLFT quotes (inventory limit 30, horizon 600 s), coloured by final profit, and the optimal bid distance $\delta^b$ (ticks) over time and inventory.* Animated: [`a4_market_maker.gif`](../../figures/animations/a4_market_maker.gif).
+
 ## The question
 
 Where should a market maker quote, given its inventory, its risk aversion, and how fills respond to price? The control problem has an exact solution; its inputs must be estimated, and errors cost money.

@@ -36,6 +36,13 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{What the imbalance says about the next move}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g06_order_flow.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) Mid, weighted mid and micro-price (ticks) over 15 s of the simulated book. (b) Law of the mid change over the next 2 s by queue imbalance $I = q_b/(q_b + q_a)$, with $q_b$ and $q_a$ the best bid and ask queues (orders), at a one-tick spread. A rise has probability \GalSixUpLow\% when $I < 0.2$ and \GalSixUpHigh\% when $I > 0.8$; a fall \GalSixDownLow\% and \GalSixDownHigh\% (at least \GalSixMinBin{} samples per bin).
+\end{frame}
+
 \begin{frame}{What the data say about order flow}
   \small
   \begin{itemize}

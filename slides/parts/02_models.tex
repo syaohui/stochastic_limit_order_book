@@ -49,6 +49,13 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{A simulated book, as it moves}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g01_markov_book.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) A simulated Cont-Stoikov-Talreja book over 300 s (\GalOneEvents{} events): the depth at every price $p$ (ticks), asks red and bids blue, darker is deeper, with the best quotes in black. Over the whole run the spread is one tick \GalOneSpreadOne\% of the time. (b) The depth profile at six times, against the distance from the mid.
+\end{frame}
+
 \begin{frame}{Markovian book: depth profile and spread}
   \centering
   \includegraphics[width=0.92\textwidth]{fig1_markov_book.png}
@@ -79,6 +86,13 @@
       \[ \sigma^2 = \pi\lambda\delta^2/M_F \quad (\text{time scale } t\,n\log n). \]
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}{The race of the best queues}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g02_best_queues.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) Walks of the best queues $(q_b, q_a)$ (orders) from 5 bids and 3 asks in the balanced model (limit rate equals market plus cancellation rate), each until one queue empties; red when the ask empties first and the price rises. Of \GalTwoPaths{} walks, $\GalTwoMC$ rise; the exact value is \GalTwoExact{} ($z = \GalTwoZ$). (b) The exact probability that the next move is up, over both queue sizes.
 \end{frame}
 
 \begin{frame}{Best queues: closed forms against simulation}
@@ -123,6 +137,13 @@
       \end{itemize}
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}{A Hawkes path as a family tree}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g04_hawkes.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  One path in cluster form: baseline rate $\mu$ = 0.15/s, branching ratio $n$ = 0.85, kernel $n\beta e^{-\beta t}$ with $\beta$ = 0.8/s, over 200 s. (a) \GalFourImm{} immigrants start families; \GalFourEvents{} events in all (the stationary rate gives \GalFourExpected), and the largest family has \GalFourLargest{} events over \GalFourMaxGen{} generations. (b) The intensity $\lambda_t$ (1/s), which peaks at \GalFourPeak/s.
 \end{frame}
 
 \begin{frame}{Hawkes: fitting buy and sell market orders}
@@ -180,6 +201,13 @@
 
   \raggedright\footnotesize
   Signs: sign of fractional Gaussian noise, $\gamma_\varepsilon = \EsixGamma$, $2^{20}$ trades, $\EsixNrep$ replicates. Fitted slopes $\EsixSlopeLow$, $\EsixSlopeCrit$, $\EsixSlopeHigh$ against theory $\EsixTheoryLow$, $\EsixTheoryCrit$, $\EsixTheoryHigh$.
+\end{frame}
+
+\begin{frame}{Impact is a mean; the latent book behind it}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g05_price_impact.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) 200 runs of the propagator model (impact $G(\ell) = \Gamma_0 \ell^{-1/4}$ of a trade $\ell$ trades later, with scale $\Gamma_0$; trade-sign correlation decaying as $\ell^{-1/2}$) with a buy metaorder that makes 30\% of trades for 1,000 trades. At its end the mean impact is $\GalFivePeakMC\,\Gamma_0$ against \GalFivePeakTh{} from the formula; single runs scatter by \GalFiveNoise. (b) The latent book $|\phi|$ (shares/tick) at seven times during and after a buy metaorder (rate $m$ = 20 shares/s for 1 s; book slope $L$ = 1 share/tick$^2$, diffusion $D$ = 1 tick$^2$/s); the price (black) follows the closed form within \GalFiveErr\%.
 \end{frame}
 
 \begin{frame}{Large orders: the square-root law and the latent book}

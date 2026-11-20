@@ -28,7 +28,7 @@ ytick.minor.size    : 2.0
 ytick.minor.width   : 0.6
 
 font.family      : serif
-font.serif       : Times New Roman, DejaVu Serif, STIXGeneral
+font.serif       : Times New Roman, Liberation Serif, DejaVu Serif, STIXGeneral
 mathtext.fontset : stix
 font.size        : 9
 axes.labelsize   : 10

@@ -22,6 +22,20 @@ def panel_label(ax, text):
     ax.text(0.0, 1.02, text, transform=ax.transAxes, ha="left", va="bottom", fontweight="bold")
 
 
+def style_3d(ax, elev=24.0, azim=-58.0, labelsize=7.5):
+    """Light panes, faint grid and print-size tick labels for a 3D axes."""
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        try:
+            axis._axinfo["grid"].update(color="0.85", linewidth=0.4)
+            axis._axinfo["tick"].update(inward_factor=0.4, outward_factor=0.0)
+        except (AttributeError, KeyError):
+            pass
+    ax.tick_params(labelsize=labelsize, pad=0.5)
+    ax.view_init(elev=elev, azim=azim)
+    return ax
+
+
 def save(fig, stem, outdir, width_in=None):
     """Save as PNG at 300 dpi (the only figure format kept in the repository).
 

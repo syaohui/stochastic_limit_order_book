@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/03-queue-reactive-models.pdf`](../../slides/decks/03-queue-reactive-models.pdf) · Code: [`queue_reactive.py`](../../src/stochastic_lob/queue_reactive.py) · Experiments: `e3_queue_reactive.py`, `e16_queue_reactive_price.py`
 
+![Queue-reactive](../../figures/gallery/g03_queue_reactive.png)
+
+*Eighty queue-size paths of the queue-reactive model started from 15 orders, with the exact mean $E[q_t]$ (orders) and the stationary mean, and the exact law of the queue size at 1 to 32 s next to the stationary law (red).*
+
 ## The question
 
 Traders look at the queue before they act. What happens if every intensity is a function of the size of the queue it acts on? Huang, Lehalle and Rosenbaum (HLR, 2015) build the model, estimate it nonparametrically, and add a reference price.

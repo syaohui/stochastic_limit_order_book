@@ -2,15 +2,15 @@
 
 **Stochastic models of the limit order book, order flow, price impact, and the liquidity provider's problem.** Ten slide decks and the open code behind every number in them.
 
-📊 **Overview deck:** [`slides/stochastic-lob-slides.pdf`](slides/stochastic-lob-slides.pdf) (58 slides) &nbsp;·&nbsp; 🔬 **Nine deep dives:** [`slides/decks/`](slides/decks/) &nbsp;·&nbsp; 📖 **Docs:** [`docs/`](docs/README.md) &nbsp;·&nbsp; 📓 **Notebook:** [`notebooks/tour.ipynb`](notebooks/tour.ipynb)
+📊 **Overview deck:** [`slides/stochastic-lob-slides.pdf`](slides/stochastic-lob-slides.pdf) (65 slides) &nbsp;·&nbsp; 🔬 **Nine deep dives:** [`slides/decks/`](slides/decks/) &nbsp;·&nbsp; 📖 **Docs:** [`docs/`](docs/README.md) &nbsp;·&nbsp; 📓 **Notebook:** [`notebooks/tour.ipynb`](notebooks/tour.ipynb)
 
 The overview deck covers the main stochastic models of the book, what order flow does to prices, the problems liquidity providers (LPs) work on now, research from 2023 to 2026, and open problems. Each deep dive takes one topic further: the model and its math, how to estimate it and with what uncertainty, figures from this code, what published research reports, and a discussion for LPs.
 
 There is no market data in this repository. Every figure is a simulation, every closed form is checked against an independent computation, and every estimate carries a standard error. Published facts are quoted from the cited papers. The estimators also run on real order book data in the LOBSTER format ([docs/data.md](docs/data.md)).
 
-![Latent order book impact](figures/fig19_latent_book.png)
+![A simulated limit order book](figures/animations/a1_order_book.gif)
 
-*Metaorder impact in the latent order book. (a) Peak impact against metaorder size, from linear to square root, with a closed form derived here and a finite-difference solution of the model's PDE (within 0.8%). (b) The local exponent falls from 1 to 1/2. (c) Impact decays after execution; slow execution follows the linear-response formula.*
+*One simulated minute of a Markovian (Cont-Stoikov-Talreja) order book. Left: the depth at every price fills in as time runs (asks red, bids blue, darker is deeper; best quotes in black). Right: the depth profile right now, which changes with every limit order, cancellation and market order.*
 
 ## The deep dives
 
@@ -28,9 +28,39 @@ There is no market data in this repository. Every figure is a simulation, every 
 
 Each deck has a matching page in [`docs/topics/`](docs/topics/).
 
+## See the simulations
+
+Most numbers in this repository are statistics of simulated random objects. These figures show the objects themselves. The animations come from [`experiments/animations.py`](experiments/animations.py) and the gallery from [`experiments/gallery.py`](experiments/gallery.py), with the models and parameters of the matching experiments.
+
+| | |
+|:---:|:---:|
+| ![Queue race](figures/animations/a2_queue_race.gif) | ![Hawkes cascade](figures/animations/a3_hawkes_cascade.gif) |
+| *1,000 copies of the best queues start from 5 bids and 3 asks and walk until one queue empties. The share that ends with a price rise climbs to the exact Cont-de Larrard probability, 0.655.* | *A Hawkes process in its cluster form: immigrants arrive at a constant rate, every event can trigger children, and the intensity jumps and decays.* |
+| ![Market maker](figures/animations/a4_market_maker.gif) | ![Order book in 3D](figures/animations/a5_book_3d.gif) |
+| *A market maker with optimal GLFT quotes: quotes skew with inventory around a random mid, fills arrive at random, and the profit across 2,000 paths drifts up while it spreads out.* | *The book in 3D: 19 snapshots of the depth profile, two seconds apart, turning in space.* |
+
+One gallery figure per topic, mixing 3D views with 2D path plots:
+
+| | |
+|:---:|:---:|
+| ![Markovian book](figures/gallery/g01_markov_book.png) | ![Best queues](figures/gallery/g02_best_queues.png) |
+| *1. A liquidity map of a simulated book over 300 s, and the depth profile at six times.* | *2. Walks of the two best queues until one empties, and the exact probability that the next move is up.* |
+| ![Queue-reactive](figures/gallery/g03_queue_reactive.png) | ![Hawkes](figures/gallery/g04_hawkes.png) |
+| *3. Queue-size paths from a long queue, and its law relaxing to the stationary one.* | *4. The branching cascade of one Hawkes path, and its intensity.* |
+| ![Price impact](figures/gallery/g05_price_impact.png) | ![Order flow](figures/gallery/g06_order_flow.png) |
+| *5. Noisy impact paths of a metaorder around the propagator mean, and the latent order book during and after a metaorder.* | *6. Mid, weighted mid and micro-price, and the law of the next mid change by queue imbalance.* |
+| ![Market making](figures/gallery/g07_market_making.png) | ![Adverse selection](figures/gallery/g08_adverse_selection.png) |
+| *7. Inventory paths coloured by final profit, and the exact GLFT bid surface.* | *8. Glosten-Milgrom beliefs converging to the true value, and the spread surface.* |
+| ![AMM](figures/gallery/g09_amm.png) | |
+| *9. Loss-versus-rebalancing paths of a constant-product pool, and LVR per unit capital over volatility and range width.* | |
+
 ## Results that are new in this repository
 
 Small, checkable results produced by the code here. They are not claims about any market.
+
+![Latent order book impact](figures/fig19_latent_book.png)
+
+*Metaorder impact in the latent order book. (a) Peak impact against metaorder size, from linear to square root, with a closed form derived here and a finite-difference solution of the model's PDE (within 0.8%). (b) The local exponent falls from 1 to 1/2. (c) Impact decays after execution; slow execution follows the linear-response formula.*
 
 - **Latent order book, exact crossover.** For a metaorder at constant rate, the price follows $y_t = \sqrt{Dt}\,F(u)$ with $u = m/(LD)$, and $F$ solves a one-line integral equation. Its limits give linear impact $Q/(L\sqrt{\pi DT})$ and square-root impact $\sqrt{2Q/L}$; they cross at $u = 2\pi$. The PDE agrees within 0.8%.
 - **Branching ratios are easy to misread.** A Hawkes process with a power-law-like kernel and $n = 0.9$, fitted with one exponential, gives $\hat n \approx 0.43$ at every window from 1 minute to 8 hours. Pure Poisson data with a U-shaped intraday rate give $\hat n = 0.919 \pm 0.001$; after a time change by the estimated profile, $0.014 \pm 0.008$.
@@ -97,7 +127,11 @@ python experiments/run_all.py
 python build_slides.py
 ```
 
-46 tests (under a minute; each test file also runs on its own without pytest). 23 experiments (about 15 minutes on a laptop, fixed seeds) write every figure to `figures/` and every number to `results/`. `build_slides.py` compiles the overview and the nine deep dives; it needs LaTeX with `latexmk` and the Metropolis Beamer theme. Details: [docs/reproducibility.md](docs/reproducibility.md).
+```bash
+python experiments/animations.py
+```
+
+46 tests (under a minute; each test file also runs on its own without pytest). 23 experiments and the gallery (about 15 minutes on a laptop, fixed seeds) write every figure to `figures/` and every number to `results/`. The five GIFs take a few minutes of CPU time. `build_slides.py` compiles the overview and the nine deep dives; it needs LaTeX with `latexmk` and the Metropolis Beamer theme. Details: [docs/reproducibility.md](docs/reproducibility.md).
 
 ## Run it on real data
 
@@ -112,7 +146,7 @@ Estimates book rates, P(up | queues), a Hawkes model of market orders, OFI regre
 ```
 stochastic-lob/
 ├── slides/
-│   ├── stochastic-lob-slides.pdf   overview deck (58 slides)
+│   ├── stochastic-lob-slides.pdf   overview deck (65 slides)
 │   ├── decks/                      the nine deep-dive PDFs
 │   ├── main.tex, parts/            overview deck source
 │   ├── topics/                     deep-dive sources t1 to t9
@@ -132,12 +166,12 @@ stochastic-lob/
 │   ├── markouts.py                 markouts of passive fills
 │   ├── amm.py                      loss-versus-rebalancing
 │   └── lobster.py                  LOBSTER data format
-├── experiments/                    e1 to e23, one script per figure, run_all.py
+├── experiments/                    e1 to e23 (one script per figure), gallery.py, animations.py, run_all.py
 ├── tests/                          46 checks against independent results
 ├── examples/lobster_pipeline.py    all estimators on one LOBSTER day
 ├── docs/                           topic pages, API, data, reproducibility, reading list
 ├── notebooks/tour.ipynb            short worked examples
-├── figures/                        generated figures (PNG)
+├── figures/                        generated figures (PNG); gallery/ and animations/ (GIF)
 ├── results/                        generated numbers (JSON and LaTeX macros)
 └── build_slides.py                 compiles all decks
 ```

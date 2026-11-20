@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/05-price-impact.pdf`](../../slides/decks/05-price-impact.pdf) · Code: [`impact.py`](../../src/stochastic_lob/impact.py), [`latent_book.py`](../../src/stochastic_lob/latent_book.py) · Experiments: `e6_propagator.py`, `e18_propagator_estimation.py`, `e19_latent_book.py`
 
+![Price impact](../../figures/gallery/g05_price_impact.png)
+
+*Left: 200 runs of the propagator model with long-memory trade signs and a buy metaorder that makes 30% of trades for 1,000 trades; single runs are noisy, and their mean follows the propagator formula. Right: the latent order book $|\phi|$ (shares/tick) at seven times during and after a buy metaorder (rate $m$ = 20 shares/s for 1 s; book slope $L$ = 1 share/tick², diffusion $D$ = 1 tick²/s), with the price on the floor.*
+
 ## The question
 
 Trades move prices. How much, for how long, and why is impact concave in size? Two facts must coexist. Trade signs $\varepsilon_n = \pm1$ (trade time $n$) have long memory, $C_\varepsilon(\ell) = \mathbb{E}[\varepsilon_n\varepsilon_{n+\ell}] \sim \ell^{-\gamma_\varepsilon}$ with $0 < \gamma_\varepsilon < 1$. Yet prices are close to unpredictable, and a metaorder of $Q$ shares moves the price by about $Y\sigma_D\sqrt{Q/V_D}$, with daily volatility $\sigma_D$, daily volume $V_D$ and $Y$ of order one.

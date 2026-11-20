@@ -106,6 +106,13 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Optimal quotes, random inventory}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g07_market_making.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) Inventory paths of a market maker with the exact GLFT quotes (limit 30 shares, horizon 600 s, as in e11), coloured by final profit; grey: 5\% to 95\% of \GalSevenPaths{} paths. Mean profit $\GalSevenProfit$ ticks. (b) The optimal bid distance $\delta^b$ (ticks) over time and inventory; at zero inventory it is \GalSevenBidZero{} ticks.
+\end{frame}
+
 \begin{frame}{Exact quotes against approximations}
   \centering
   \includegraphics[width=0.84\textwidth]{fig11_glft_exact.png}
@@ -173,6 +180,13 @@
       LP losses here are adverse selection, the same economics as stale quotes in a book.
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}{LVR path by path}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g09_amm.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) Loss-versus-rebalancing (LVR) of a constant-product pool on 150 of 400 price paths ($\sigma$ = 4\% per $\sqrt{\text{day}}$); after 30 days the mean is $\GalNineMean\%$ of the initial pool value $V_0$ against the exact \GalNineExact\%. (b) Log LVR per unit capital (\% a day) of a concentrated position over $\sigma$ and the range half-width; a $\pm$10\% range at $\sigma$ = 4\% loses \GalNineRange\% a day.
 \end{frame}
 
 \begin{frame}{LVR: fees, block time and concentration}

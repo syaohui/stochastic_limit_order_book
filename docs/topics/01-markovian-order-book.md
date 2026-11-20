@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/01-markovian-order-book.pdf`](../../slides/decks/01-markovian-order-book.pdf) · Code: [`markov_lob.py`](../../src/stochastic_lob/markov_lob.py), [`lobster.py`](../../src/stochastic_lob/lobster.py) · Experiments: `e1_markov_book.py`, `e15_rate_estimation.py`
 
+![Markovian book](../../figures/gallery/g01_markov_book.png)
+
+*A simulated Cont-Stoikov-Talreja book over 300 s: the depth at every price (asks red, bids blue, darker is deeper) with the best quotes in black, and the depth profile at six times against the distance from the mid.* Animated: [`a1_order_book.gif`](../../figures/animations/a1_order_book.gif) and, in 3D, [`a5_book_3d.gif`](../../figures/animations/a5_book_3d.gif).
+
 ## The question
 
 Can order flow with no strategy at all explain the shape of the book, the spread, and the speed of price moves? If it can, the book's statics are set by a few rates. If it cannot, the gap shows where strategy and information matter. For a liquidity provider (LP) the model is a null hypothesis: the fill probabilities and spreads to expect before any signal or toxicity.

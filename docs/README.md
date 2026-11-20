@@ -18,6 +18,8 @@ This folder explains the models, the statistics and the code behind the slides. 
 
 The overview deck, [`slides/stochastic-lob-slides.pdf`](../slides/stochastic-lob-slides.pdf), covers all of these in one pass, plus recent research (2023 to 2026) and open problems.
 
+Each topic page opens with a gallery figure that shows the simulated objects themselves (paths, books, cascades, surfaces), and links the matching animation in [`figures/animations/`](../figures/animations/) where there is one.
+
 ## Using the code
 
 - [api.md](api.md): every module and its main functions, with units.

@@ -2,6 +2,10 @@
 
 Deck: [`slides/decks/02-best-queues.pdf`](../../slides/decks/02-best-queues.pdf) · Code: [`best_queues.py`](../../src/stochastic_lob/best_queues.py), `queue_position.p_up_state_dependent`, `markov_lob.empirical_p_up` · Experiments: `e2_best_queues.py`, `e23_cdl_on_book.py`
 
+![Best queues](../../figures/gallery/g02_best_queues.png)
+
+*Walks of the best-queue sizes $(q_b, q_a)$ (orders) from 5 bids and 3 asks in the balanced model, each until one queue empties (red: the ask empties first and the price rises). Of 20,000 walks, $0.657 \pm 0.003$ end with a rise; the exact Cont-de Larrard value is 0.655. Right: the exact probability that the next move is up, over both queue sizes.* Animated: [`a2_queue_race.gif`](../../figures/animations/a2_queue_race.gif).
+
 ## The question
 
 In a liquid large-tick stock almost all activity is at the best bid and ask. Can two queues explain the direction of the next price move, the time until it happens, and the volatility over minutes? For an LP, the direction is the chance a resting quote turns stale, and the timing is how long it stays exposed.

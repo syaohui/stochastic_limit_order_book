@@ -5,12 +5,34 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 FIG = ROOT / "figures"
 RES = ROOT / "results"
 RES.mkdir(exist_ok=True)
+RAW = RES / "raw"        # cached simulation output of the gallery (not tracked)
+
+
+def save_raw(name: str, **arrays):
+    RAW.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(RAW / f"{name}.npz", **{k: np.asarray(v) for k, v in arrays.items()})
+
+
+def load_raw(name: str) -> dict:
+    with np.load(RAW / f"{name}.npz") as d:
+        return {k: d[k] for k in d.files}
+
+
+def run(compute, plot):
+    """Command line: --compute, --plot, or both (default)."""
+    args = set(sys.argv[1:])
+    if not args or "--compute" in args:
+        compute()
+    if not args or "--plot" in args:
+        plot()
 
 
 def write_numbers(name: str, numbers: dict):
@@ -30,6 +52,11 @@ def write_numbers(name: str, numbers: dict):
 
 def fmt(x, nd=3):
     return f"{x:.{nd}f}"
+
+
+def fmt_int(n):
+    """Integer with a LaTeX thousands separator, e.g. 12{,}000."""
+    return f"{int(round(float(n))):,}".replace(",", "{,}")
 
 
 def fmt_pm(x, se, nd=3):

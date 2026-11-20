@@ -27,8 +27,13 @@ python build_slides.py
 ```
 
 - Tests: 46 checks in three files (under a minute). Each compares a closed form or estimator with an independent computation: Monte Carlo, an exact linear solve, a PDE solution, or a known limit. Without pytest, run each file directly, for example `python tests/test_extensions.py`.
-- Experiments: 23 scripts with fixed seeds, about 15 minutes on a laptop. Rerunning reproduces every number exactly.
+- Experiments: 23 scripts and the gallery, with fixed seeds, about 15 minutes on a laptop. Rerunning reproduces every number exactly.
 - Slides: `build_slides.py` compiles the main deck to `slides/stochastic-lob-slides.pdf` and the nine topic decks to `slides/decks/`. It needs LaTeX with `latexmk` and the Metropolis Beamer theme. `python build_slides.py t5` builds one deck.
+
+## Gallery and animations
+
+- `experiments/gallery.py` makes one showcase figure per topic in `figures/gallery/` and writes its numbers to `results/gallery.{json,tex}`. It runs with the experiments (`run_all.py` includes it); its simulations take about half a minute and are cached in `results/raw/gallery.npz` (not tracked), so `python experiments/gallery.py --plot` redraws the figures alone.
+- `experiments/animations.py` renders five GIFs to `figures/animations/` (20 to 24 frames per second; 1080 pixels wide, the turning 3D view 750). Frames are drawn at 150 dpi and encoded with one shared 255-colour palette and no dithering, so lines and text stay sharp. The GIFs in this repository were rendered on a Linux cluster node (job of 20 November 2026, about a minute with the five in parallel), with Liberation Serif standing in for Times New Roman. `python experiments/animations.py a2` renders one; `--poster DIR` saves the last frame of each as a PNG for the figure audit, and `--sample DIR` writes 12 evenly spaced frames of each as a quick test.
 
 ## Figures
 

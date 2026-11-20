@@ -36,6 +36,13 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Learning from order flow}
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.58\textheight,keepaspectratio]{gallery/g08_adverse_selection.png}\par\vspace{0.4em}
+  \footnotesize\raggedright
+  (a) Glosten-Milgrom with 30\% informed traders and values $V_L = 0$, $V_H = 1$: the market maker's estimate $E[V]$ on 200 paths (red when $V = V_H$) and the mean spread, which falls from \GalEightStart{} to \GalEightEnd{} in 60 trades; \GalEightWrong\% of 2,000 paths still lean the wrong way after 60 trades. (b) The zero-profit spread over the belief $\pi$ and the informed share $\alpha$.
+\end{frame}
+
 \begin{frame}{The accounting identity}
   \small
   Fill $j$ at time $t_j$ (s) and price $p_j$, with $\varepsilon_j = +1$ if the LP sold and $-1$ if it bought; inventory $y_t = -\sum_{t_j<t}\varepsilon_j$ (shares); mid $S_t$. Starting flat, the marked-to-market P\&L $\Pi_T$ is exactly

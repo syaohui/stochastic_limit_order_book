@@ -26,6 +26,7 @@ EXPERIMENTS = [
     "e21_fill_estimation",
     "e22_glosten_milgrom",
     "e23_cdl_on_book",
+    "gallery",
 ]
 
 if __name__ == "__main__":
